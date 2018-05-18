@@ -178,7 +178,7 @@ export default {
         this.refrashShadowHeight();
 
         $(document).ready(function() {
-            console.log("ready");
+            // console.log("ready");
 
             // absolute  忽略 父子元素的 相对位置，子元素位置为 （0， 0）
             var el = document.getElementById('water');  // 目标
@@ -188,7 +188,7 @@ export default {
             var interval = {minLeft: -100, maxLeft: 0, minTop: -100, maxTop: 0};  // 区间
 
             var move = function() {
-                console.log(a);
+                // console.log(a);
 
                 var position = {  // 位置
                     left: $(el).position().left,
@@ -248,16 +248,17 @@ export default {
                 $(el).css({"left": position.left+"px", "top": position.top+"px"});
             };
 
-
-
-
-            this.waterTimer = setInterval(function() {
+            that.waterTimer = setInterval(function() {
                 move();
             }, 100);
         });
     },
     destroyed() {
-        console.log("destroyed");
+        // console.log("destroyed");
+
+        if(this.waterTimer) {
+            clearInterval(this.waterTimer);
+        }
     },
     computed: {
 

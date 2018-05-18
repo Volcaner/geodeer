@@ -66,7 +66,7 @@ export default {
             clearInterval(this.managerTimer);
         }
         this.managerTimer = setInterval(function() {
-            console.log("aaa");
+            // console.log("managerTimer");
             $(".manager_control>span:eq(1)").trigger("click");
         }, 10000);
     },

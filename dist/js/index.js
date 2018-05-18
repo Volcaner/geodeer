@@ -59,7 +59,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "d4a381a75a969dc9c939"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "0cb174ba6a89c900a4fc"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
@@ -21948,7 +21948,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             clearInterval(this.managerTimer);
         }
         this.managerTimer = setInterval(function () {
-            console.log("aaa");
+            // console.log("managerTimer");
             $(".manager_control>span:eq(1)").trigger("click");
         }, 10000);
     },
@@ -22803,7 +22803,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         this.refrashShadowHeight();
 
         $(document).ready(function () {
-            console.log("ready");
+            // console.log("ready");
 
             // absolute  忽略 父子元素的 相对位置，子元素位置为 （0， 0）
             var el = document.getElementById('water'); // 目标
@@ -22813,7 +22813,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             var interval = { minLeft: -100, maxLeft: 0, minTop: -100, maxTop: 0 }; // 区间
 
             var move = function move() {
-                console.log(a);
+                // console.log(a);
 
                 var position = { // 位置
                     left: $(el).position().left,
@@ -22873,13 +22873,17 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
                 $(el).css({ "left": position.left + "px", "top": position.top + "px" });
             };
 
-            this.waterTimer = setInterval(function () {
+            that.waterTimer = setInterval(function () {
                 move();
             }, 100);
         });
     },
     destroyed: function destroyed() {
-        console.log("destroyed");
+        // console.log("destroyed");
+
+        if (this.waterTimer) {
+            clearInterval(this.waterTimer);
+        }
     },
 
     computed: {},
@@ -22926,7 +22930,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* WEBPACK VAR INJECTION */(function($) {//
+//
 //
 //
 //
@@ -22938,11 +22942,10 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         return {};
     },
     mounted: function mounted() {
-        console.log('aaa');
-        console.log($(".main"));
+        // console.log('aaa');
+        // console.log($(".main"));
     }
 });
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(3)))
 
 /***/ }),
 /* 72 */
@@ -23134,7 +23137,7 @@ _vue2.default.use(_vueRouter2.default);
 __webpack_require__(60);
 // require('../../lib/qqmap');
 
-console.log(_index4.default);
+// console.log(routers);
 
 var router = new _vueRouter2.default(_index4.default);
 

@@ -13,7 +13,7 @@ import css from '../less/index.less';
 require('../public/public');
 // require('../../lib/qqmap');
 
-console.log(routers);
+// console.log(routers);
 
 const router = new VueRouter(
 	routers

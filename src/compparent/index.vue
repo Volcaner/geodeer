@@ -12,8 +12,8 @@
             }
         },
         mounted() {
-            console.log('aaa');
-            console.log($(".main"));
+            // console.log('aaa');
+            // console.log($(".main"));
         },
     }
 </script>
