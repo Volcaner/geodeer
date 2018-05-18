@@ -213,7 +213,8 @@ export default {
             var elSiblings = $(el).siblings();
             elSiblings.each(function(index, item) {
                 var itemDataKey = $(item).find("img").attr("data-key");
-                $(item).find("img").attr("src", "../images/" + itemDataKey + ".png");
+                var preSrc = require("../images/" + itemDataKey + ".png");
+                $(item).find("img").attr("src", preSrc);
             });
         },
         clickToShowRecruit: function(obj) {

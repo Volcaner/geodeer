@@ -18,9 +18,9 @@
                 <hr />
             </div>
             <div class="top_others clearfix">
-                <img src="../images/point.png" alt="" style="background-image: url(../images/04figure-2.png); background-position: 8px 8px;">
-                <img src="../images/point.png" alt="" style="background-image: url(../images/04figure-2.png); background-position: -43px 8px;">
-                <img src="../images/point.png" alt="" style="background-image: url(../images/04figure-2.png); background-position: -93px 8px;">
+                <img src="../images/point.png" alt="" :style='"background-image: url(" + otherFigurePic + "); background-position: 8px 8px;"'>
+                <img src="../images/point.png" alt="" :style='"background-image: url(" + otherFigurePic + "); background-position: -43px 8px;"'>
+                <img src="../images/point.png" alt="" :style='"background-image: url(" + otherFigurePic + "); background-position: -93px 8px;"'>
             </div>
         </div>
     </div>
@@ -32,6 +32,7 @@ export default {
     data() {
         return {
             logo: require('../images/01logo.png'),
+            otherFigurePic: require('../images/04figure-2.png'),
             // tabType: "HOME",
         }
     },

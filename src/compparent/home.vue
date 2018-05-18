@@ -49,7 +49,7 @@
 
                     <div class="hc_product_content clearfix">
                         <div class="hc_product_cShow hc_product_cShow1">
-                            <img src="../images/07nut-1.png" alt="">
+                            <img src="../images/07nut-1.jpg" alt="">
                             <div class="hc_product_cShow_shadow clearfix">
                                 <div class="shadow_lineTop"></div>
                                 <div class="shadow_circle"></div>
@@ -66,7 +66,7 @@
                             </div>
                         </div>
                         <div class="hc_product_cShow hc_product_cShow2">
-                            <img src="../images/08nut-2.png" alt="">
+                            <img src="../images/08nut-2.jpg" alt="">
                             <div class="hc_product_cShow_shadow clearfix">
                                 <div class="shadow_lineTop"></div>
                                 <div class="shadow_circle"></div>
@@ -104,7 +104,7 @@
                             </div>
                         </div>
                         <div class="hc_product_cShow hc_product_cShow5">
-                            <img src="../images/11nut-5.png" alt="">
+                            <img src="../images/11nut-5.jpg" alt="">
                             <div class="hc_product_cShow_shadow clearfix">
                                 <div class="shadow_lineTop"></div>
                                 <div class="shadow_circle"></div>
