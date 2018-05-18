@@ -117,3 +117,13 @@ li {
 .fade-leave-to {
   opacity: 0;
 }
+
+#water {
+  position: absolute;
+  width: calc(100% + 2.13333333rem);
+  height: calc(100% + 2.13333333rem);
+  background-image: url(./../images/02Firstpicture.png);
+  background-position: bottom;
+  background-repeat: no-repeat;
+  background-size: cover;
+}

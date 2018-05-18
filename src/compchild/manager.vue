@@ -58,17 +58,22 @@
 export default {
     data() {
         return {
-
+            managerTimer: null,
         }
     },
     mounted() {
-        if(window.managerTimer) {
-            clearInterval(window.managerTimer);
+        if(this.managerTimer) {
+            clearInterval(this.managerTimer);
         }
-        window.managerTimer = setInterval(function() {
+        this.managerTimer = setInterval(function() {
             console.log("aaa");
             $(".manager_control>span:eq(1)").trigger("click");
         }, 10000);
+    },
+    destroyed() {
+        if(this.managerTimer) {
+            clearInterval(this.managerTimer);
+        }
     },
     methods: {
         clickToPrevious: function() {

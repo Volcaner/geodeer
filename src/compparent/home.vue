@@ -2,6 +2,10 @@
     <transition name="fade">
         <div class="home">
             <div class="h_top">
+                <div id="water" style="top: -50px; left: -50px;">
+
+                </div>
+
                 <div class="h_topTab">
                     <Top></Top>
                 </div>
@@ -164,7 +168,7 @@ import {mapState, mapMutations, mapActions} from 'vuex';
 export default {
     data() {
         return {
-
+            waterTimer: null,
         }
     },
     mounted() {
@@ -172,6 +176,88 @@ export default {
         this.$store.commit('setTabType', "HOME");
 
         this.refrashShadowHeight();
+
+        $(document).ready(function() {
+            console.log("ready");
+
+            // absolute  忽略 父子元素的 相对位置，子元素位置为 （0， 0）
+            var el = document.getElementById('water');  // 目标
+            var startPosition = {left: -50, top: -50};  // TODO: 设置初始位置
+            var speed = {vx: -1, vy: 1};  // 初始速度
+            var a = 1;  // 加速度
+            var interval = {minLeft: -100, maxLeft: 0, minTop: -100, maxTop: 0};  // 区间
+
+            var move = function() {
+                console.log(a);
+
+                var position = {  // 位置
+                    left: $(el).position().left,
+                    top: $(el).position().top
+                };
+
+                position = {
+                    left: position.left + speed.vx,
+                    top: position.top + speed.vy
+                };
+
+                var absPos = {left: Math.abs(startPosition.left), top: Math.abs(startPosition.top)};
+                if(position.left <= interval.minLeft) {
+                    position.left = interval.minLeft;
+
+                    a = parseInt(Math.random()*40+80)/100;
+                    speed.vx *= (-a);
+
+                    a = parseInt(Math.random()*40+80)/100;
+                    speed.vy *= (a);
+                }
+                if(position.left > interval.minLeft && position.left < interval.maxLeft) {
+                    // do nothing
+                }
+                if(position.left >= interval.maxLeft) {
+                    position.left = interval.maxLeft
+
+                    a = parseInt(Math.random()*40+80)/100;
+                    speed.vx *= (-a);
+
+                    a = parseInt(Math.random()*40+80)/100;
+                    speed.vy *= (a);
+                }
+
+                if(position.top <= interval.minTop) {
+                    position.top = interval.minTop;
+
+                    a = parseInt(Math.random()*40+80)/100;
+                    speed.vx *= (a);
+
+                    a = parseInt(Math.random()*40+80)/100;
+                    speed.vy *= (-a);
+                }
+                if(position.top > interval.minTop && position.top < interval.maxTop) {
+                    // do nothing
+                }
+                if(position.top >= interval.maxTop) {
+                    position.top = interval.maxTop;
+
+                    a = parseInt(Math.random()*40+80)/100;
+                    speed.vx *= (a);
+
+                    a = parseInt(Math.random()*40+80)/100;
+                    speed.vy *= (-a);
+                }
+
+                $(el).css({"left": position.left+"px", "top": position.top+"px"});
+            };
+
+
+
+
+            this.waterTimer = setInterval(function() {
+                move();
+            }, 100);
+        });
+    },
+    destroyed() {
+        console.log("destroyed");
     },
     computed: {
 
