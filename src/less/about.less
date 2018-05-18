@@ -1,0 +1,160 @@
+@import "./public.less";
+
+.about_top{
+    position: relative;
+    height: 490px;
+    background-image: url(../images/01Firstpicture.jpg);
+    background-position: bottom;
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    >.about_topTab{
+        position: relative;
+        // width: 1200px;
+        padding-top: 32px;
+        margin: 0 auto;
+
+        >.top{
+            background: #fff;
+        }
+    }
+}
+
+.about_content{
+    position: relative;
+
+    >.about_contentTab{
+        position: relative;
+
+        >.about_contentTab_order{
+            position: relative;
+            display: flex;
+            justify-content: space-around;
+            width: 490px;
+            margin: 0 auto;
+            padding: 35px 50px;
+
+            >span{
+                font-size: 12px;
+                cursor: pointer;
+            }
+            >i{
+                line-height: 12px;
+                border: 1px solid #8EA595;
+            }
+
+            .contentTabActive{
+                color: #8EA595;
+            }
+        }
+
+        >.about_content_assort{
+            position: relative;
+            padding-bottom: 150px;
+
+            >.ac_assort_news{
+                position: relative;
+
+                >.ac_assort_newsPages{
+                    position: relative;
+                    width: 1000px;
+                    margin: 0 auto;
+                    max-height: 510px;
+                    overflow: auto;
+
+                    >.ac_assort_newsPages_box{
+                        position: relative;
+                        width: 100%;
+                        display: flex;
+                        justify-content: space-between;
+                        flex-wrap: wrap;
+
+                        >.aca_news{
+                            width: 280px;
+                            margin-bottom: 50px;
+
+                            >b{
+                                display: block;
+                                line-height: 26px;
+                                font-size: 16px;
+                            }
+                            >h5{
+                                display: block;
+                                font-size: 14px;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                                white-space: nowrap;
+                                line-height: 40px;
+                            }
+                            >p{
+                                font-size: 12px;
+                                display: -webkit-box;
+                                -webkit-box-orient: vertical;
+                                -webkit-line-clamp: 3;
+                                overflow: hidden;
+                            }
+                            >i{
+                                float: right;
+                                cursor: pointer;
+                            }
+                        }
+                    }
+                }
+
+                >.ac_assort_newsText{
+                    position: relative;
+                    width: 1000px;
+                    margin: 0 auto;
+
+                    >.ac_assort_newsText_close{
+                        position: absolute;
+                        right: 150px;
+
+                        >i{
+                            display: block;
+                            font-style: normal;
+                            height: 30px;
+                            line-height: 30px;
+                            width: 30px;
+                            border: 1px solid #aaa;
+                            border-radius: 50%;
+                            text-align: center;
+                            color: #aaa;
+                            cursor: pointer;
+                            font-size: 20px;
+                        }
+                        >i:active{
+                            color: #212121;
+                            border: 1px solid #212121;
+                        }
+                    }
+                }
+            }
+
+            >.ac_assort_manager{
+                position: relative;
+
+                >.ac_assort_manager_box{
+
+                }
+            }
+        }
+
+    }
+}
+
+.about_footer{
+    position: relative;
+    height: 700px;
+    background-image: url(../images/20Bottompicture.png);
+    background-position: bottom;
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    >.about_footerBox{
+        position: relative;
+        margin: 0 auto;
+        padding-top: 160px;
+        width: 984px;
+    }
+}

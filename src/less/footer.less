@@ -1,0 +1,114 @@
+@import "./public.less";
+
+.footer{
+    position: relative;
+}
+
+.footer_box{
+    position: relative;
+    width: 984px;
+    // height: 465px;
+    background: rgba(255,255,255,0.5);
+    // background: #000;
+    padding: 0 70px;
+    border-radius: 5px;
+
+    >.footer_content{
+        position: relative;
+        padding-top: 90px;
+
+        >div{
+            position: relative;
+            display: block;
+            float: left;
+            margin-left: 110px;
+            margin-bottom: 90px;
+
+            >h5{
+                display: block;
+                font-size: 14px;
+                font-weight: normal;
+                color: #212121;
+                width: 60px;
+                text-align: center;
+                cursor: pointer;
+            }
+            >ul{
+                position: relative;
+                width: 60px;
+                margin-top: 25px;
+
+                >li{
+                    position: relative;
+                    float: left;
+                    margin-bottom: 12px;
+                    font-size: 12px;
+                    color: #212121;
+                    white-space: nowrap;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    -ms-transform: translateX(-50%); 	/* IE 9 */
+                    -moz-transform: translateX(-50%); 	/* Firefox */
+                    -webkit-transform: translateX(-50%); /* Safari 和 Chrome */
+                    -o-transform: translateX(-50%); 	/* Opera */
+                }
+            }
+        }
+
+        >.footer_logo{
+            position: relative;
+            width: 175px;
+            height: 130px;
+            margin-left: 0;
+
+            >img{
+                display: block;
+                margin: 0 auto;
+            }
+            >img:first-child{
+                width: 80px;
+                height: 80px;
+            }
+            >img:last-child{
+                width: 175px;
+                height: 25px;
+                margin-top: 25px;
+            }
+        }
+    }
+
+    >hr{
+        border: none;
+        border-bottom: 1px solid #212121;
+    }
+
+    >.footer_concat{
+        >.footer_wqw{
+            position: relative;
+            width: 224px;
+            display: flex;
+            justify-content: space-between;
+            margin: 0 auto;
+            margin-top: 40px;
+            margin-bottom: 30px;
+
+            >span{
+                >img{
+                    display: block;
+                    height: 27px;
+                }
+            }
+        }
+
+        >.footer_comp{
+            position: relative;
+            padding-bottom: 35px;
+
+            >p{
+                font-size: 12px;
+                color: #212121;
+                text-align: center;
+            }
+        }
+    }
+}

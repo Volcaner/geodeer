@@ -1,0 +1,77 @@
+@import "./public.less";
+
+.product_top{
+    position: relative;
+    height: 490px;
+    background-image: url(../images/01Firstpicture.png);
+    background-position: bottom;
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    >.product_topTab{
+        position: relative;
+        // width: 1200px;
+        padding-top: 32px;
+        margin: 0 auto;
+
+        >.top{
+            background: #fff;
+        }
+    }
+}
+
+.product_assort{
+    position: relative;
+
+    >.product_assort_area{
+        position: relative;
+
+        >.product_assort_areaTab{
+            position: relative;
+            display: flex;
+            justify-content: space-around;
+            width: 490px;
+            margin: 0 auto;
+            padding: 35px 50px;
+
+            >span{
+                font-size: 12px;
+                cursor: pointer;
+            }
+            >i{
+                line-height: 12px;
+                border: 1px solid #8EA595;
+            }
+
+            .assortTabActive{
+                color: #8EA595;
+            }
+        }
+
+        >.product_assort_areaDetail{
+            position: relative;
+
+            >.pa_areaDetail_mixednut,.pa_areaDetail_partablebag,.pa_areaDetail_boxed{
+                position: relative;
+                padding-bottom: 150px;
+            }
+        }
+
+    }
+}
+
+.product_footer{
+    position: relative;
+    height: 700px;
+    background-image: url(../images/20Bottompicture.png);
+    background-position: bottom;
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    >.product_footerBox{
+        position: relative;
+        margin: 0 auto;
+        padding-top: 160px;
+        width: 984px;
+    }
+}

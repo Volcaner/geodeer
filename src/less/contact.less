@@ -1,0 +1,300 @@
+@import "./public.less";
+
+.contact_top{
+    position: relative;
+    height: 490px;
+    background-image: url(../images/map.png);
+    background-position: bottom;
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    >.contact_topTab{
+        position: relative;
+        width: 1200px;
+        padding-top: 32px;
+        margin: 0 auto;
+
+        >.top{
+            background: #fff;
+        }
+    }
+}
+
+.contact_assort{
+    position: relative;
+
+    >.contact_assort_area{
+        position: relative;
+
+        >.contact_assort_areaTab{
+            position: relative;
+            display: flex;
+            justify-content: space-around;
+            width: 490px;
+            margin: 0 auto;
+            padding: 35px 50px;
+
+            >span{
+                font-size: 12px;
+                cursor: pointer;
+            }
+            >i{
+                line-height: 12px;
+                border: 1px solid #8EA595;
+            }
+
+            .assortTabActive{
+                color: #8EA595;
+            }
+        }
+
+        >.contact_assort_areaDetail{
+            position: relative;
+
+            >.ca_areaDetail_feedback,.ca_areaDetail_contact,.ca_areaDetail_recruit{
+                position: relative;
+                padding-top: 85px;
+                padding-bottom: 150px;
+            }
+
+            >.ca_areaDetail_feedback{
+                width: 800px;
+                margin: 0 auto;
+
+                >.ca_areaDetail_feedback_contactInfo{
+                    position: relative;
+                    float: left;
+                    width: 300px;
+
+                    >p{
+                        font-size: 14px;
+
+                        >img{
+                            display: block;
+                        }
+
+                        >span{
+
+                        }
+
+                        >b{
+                            font-weight: normal;
+                        }
+                    }
+
+                    >hr{
+                        margin: 15px 0;
+                    }
+                }
+
+                >.ca_areaDetail_feedback_input{
+                    position: relative;
+                    float: right;
+                    width: 360px;
+
+                    >p{
+                        font-size: 14px;
+
+                        >input[type=text],input[type=textarea]{
+                            width: 100%;
+                            line-height: 26px;
+                            padding-left: 8px;
+                            margin-bottom: 20px;
+                            border: 1px solid #212121;
+                        }
+                        >input[type=button]{
+                            padding: 4px 12px;
+                            background: #fff;
+                            border: 1px solid #212121;
+                            cursor: pointer;
+                        }
+                        >textarea{
+                            width: 100%;
+                            line-height: 26px;
+                            padding-left: 8px;
+                            margin-bottom: 20px;
+                            border: 1px solid #212121;
+                        }
+                    }
+                }
+            }
+
+            >.ca_areaDetail_contact{
+                width: 800px;
+                margin: 0 auto;
+
+                >.ca_areaDetail_contact_tab{
+                    position: relative;
+                    display: flex;
+                    justify-content: space-around;
+                    // width: 490px;
+                    margin: 0 auto;
+                    // padding: 35px 50px;
+
+                    >span{
+                        display: block;
+                        cursor: pointer;
+
+                        >img{
+                            display: block;
+                            width: 140px;
+                            height: 140px;
+                        }
+                    }
+                }
+
+                >.ca_areaDetail_contact_text{
+                    position: relative;
+
+                    >div{
+                        position: relative;
+
+                        >p{
+                            position: relative;
+                            float: left;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            -ms-transform: translateX(-50%); 	/* IE 9 */
+                            -moz-transform: translateX(-50%); 	/* Firefox */
+                            -webkit-transform: translateX(-50%); /* Safari 和 Chrome */
+                            -o-transform: translateX(-50%); 	/* Opera */
+                            padding: 25px 165px;
+                            margin-top: 50px;
+                            border-top: 1px solid #8EA595;
+                            font-size: 14px;
+                            color: #1F2020;
+                        }
+                    }
+                }
+
+            }
+
+            >.ca_areaDetail_recruit{
+                width: 490px;
+                margin: 0 auto;
+
+                >.ca_areaDetail_recruit_box{
+                    position: relative;
+
+                    >.ca_areaDetail_recruit_search{
+                        >input{
+                            display: block;
+                            float: left;
+                            width: 440px;
+                            line-height: 30px;
+                            padding-left: 8px;
+                            font-size: 14px;
+                            margin-right: 15px;
+                            border: 1px solid #212121;
+                        }
+                        >span{
+                            display: block;
+                            float: left;
+                            width: 30px;
+                            height: 30px;
+
+                            >img{
+                                display: block;
+                                margin: 0 auto;
+                            }
+                        }
+                    }
+
+                    >.ca_areaDetail_recruit_list{
+                        position: relative;
+                        padding-top: 15px;
+
+                        >.recruit_list_nav{
+                            position: relative;
+                            background: #8EA595;
+                            padding: 7px 0;
+
+                            >span{
+                                display: block;
+                                float: left;
+                                line-height: 1;
+                                text-align: center;
+                                border-right: 1px solid #fff;
+                                color: #fff;
+                            }
+                            >span:last-child{
+                                border-right: none;
+                            }
+                        }
+                        >.recruit_list_ul{
+                            position: relative;
+                            padding-top: 20px;
+
+                            >ul{
+                                list-style: none;
+                                overflow: auto;
+                                max-height: 500px;
+
+                                >li{
+                                    position: relative;
+                                    padding: 7px 0;
+
+                                    >span{
+                                        display: block;
+                                        float: left;
+                                        line-height: 1;
+                                        text-align: center;
+                                        border-right: 1px solid #fff;
+                                        color: #212121;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                >.ca_areaDetail_recruit_detail{
+                    position: relative;
+                    background: #fff;
+                    // top: 85px;
+                    left: 0;
+
+                    >.ca_areaDetail_recruit_detail_close{
+                        position: absolute;
+                        right: -50px;
+
+                        >i{
+                            display: block;
+                            font-style: normal;
+                            height: 30px;
+                            line-height: 30px;
+                            width: 30px;
+                            border: 1px solid #aaa;
+                            border-radius: 50%;
+                            text-align: center;
+                            color: #aaa;
+                            cursor: pointer;
+                            font-size: 20px;
+                        }
+                        >i:active{
+                            color: #212121;
+                            border: 1px solid #212121;
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+}
+
+.contact_footer{
+    position: relative;
+    height: 700px;
+    background-image: url(../images/20Bottompicture.png);
+    background-position: bottom;
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    >.contact_footerBox{
+        position: relative;
+        margin: 0 auto;
+        padding-top: 160px;
+        width: 984px;
+    }
+}

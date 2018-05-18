@@ -1,0 +1,119 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, "Microsoft YaHei", sans-serif;
+  color: #212121;
+  word-break: break-all;
+}
+
+.clearfix:after {
+  content: "";
+  display: block;
+  zoom: 1;
+  clear: both;
+  height: 0;
+}
+
+.hide {
+  display: none;
+  visibility: hidden;
+  width: 0;
+  height: 0;
+}
+
+li {
+  list-style: none;
+}
+
+.lr-tb {
+  -webkit-writing-mode: horizontal-tb;
+  writing-mode: lr-tb;
+  writing-mode: horizontal-tb;
+}
+
+.tb-rl {
+  -webkit-writing-mode: vertical-rl;
+  writing-mode: tb-rl;
+  writing-mode: vertical-rl;
+}
+
+.tb-lr {
+  -webkit-writing-mode: vertical-lr;
+  writing-mode: tb-rl;
+  writing-mode: vertical-lr;
+}
+
+.con_text * {
+  font-size: 0.29866667rem;
+}
+
+.con_text img {
+  display: block;
+  max-width: 10.45333333rem;
+  margin: 0.42666667rem auto;
+}
+
+.con_text p {
+  display: block;
+  width: 10.45333333rem;
+  margin: 0 auto;
+}
+
+.con_text span {
+  padding-bottom: 0.42666667rem;
+  font-size: 0.29866667rem;
+  font-weight: normal;
+  display: block;
+}
+
+.con_text h5 {
+  display: block;
+  width: 10.45333333rem;
+  margin: 0 auto;
+  font-size: 0.34133333rem;
+  padding-bottom: 0.64rem;
+}
+
+.con_text b {
+  display: block;
+  width: 10.45333333rem;
+  margin: 0 auto;
+  font-size: 0.256rem;
+  font-weight: normal;
+  padding-bottom: 0.42666667rem;
+}
+
+.con_text > .con_image {
+  display: flex;
+  justify-content: space-around;
+  margin: 0 auto;
+}
+
+/* 可以设置不同的进入和离开动画 */
+
+/* 设置持续时间和动画函数 */
+
+.slide-fade-enter-active {
+  transition: all .3s ease;
+}
+
+.slide-fade-leave-active {
+  transition: all 0s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter,
+.slide-fade-leave-to {
+  transform: translateX(0.21333333rem);
+  opacity: 0;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity .5s;
+}
+
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
+}
