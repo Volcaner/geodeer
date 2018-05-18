@@ -11,6 +11,7 @@ import routers from '../router/index';
 import index from '../compparent/index.vue';
 import css from '../less/index.less';
 require('../public/public');
+require('../images/logo.ico');
 // require('../../lib/qqmap');
 
 // console.log(routers);

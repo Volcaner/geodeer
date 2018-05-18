@@ -59,7 +59,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "0cb174ba6a89c900a4fc"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "b108efe628a0029a710b"; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule; // eslint-disable-line no-unused-vars
 /******/ 	var hotCurrentParents = []; // eslint-disable-line no-unused-vars
@@ -706,7 +706,7 @@
 /******/ 	__webpack_require__.h = function() { return hotCurrentHash; };
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return hotCreateRequire(73)(__webpack_require__.s = 73);
+/******/ 	return hotCreateRequire(74)(__webpack_require__.s = 74);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -6728,7 +6728,7 @@ setTimeout(function () {
 
 module.exports = Vue$2;
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(18)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(19)))
 
 /***/ }),
 /* 2 */
@@ -6738,6 +6738,290 @@ module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAf
 
 /***/ }),
 /* 3 */
+/***/ (function(module, exports) {
+
+/*
+	MIT License http://www.opensource.org/licenses/mit-license.php
+	Author Tobias Koppers @sokra
+*/
+// css base code, injected by the css-loader
+module.exports = function() {
+	var list = [];
+
+	// return the list of modules as css string
+	list.toString = function toString() {
+		var result = [];
+		for(var i = 0; i < this.length; i++) {
+			var item = this[i];
+			if(item[2]) {
+				result.push("@media " + item[2] + "{" + item[1] + "}");
+			} else {
+				result.push(item[1]);
+			}
+		}
+		return result.join("");
+	};
+
+	// import a list of modules into the list
+	list.i = function(modules, mediaQuery) {
+		if(typeof modules === "string")
+			modules = [[null, modules, ""]];
+		var alreadyImportedModules = {};
+		for(var i = 0; i < this.length; i++) {
+			var id = this[i][0];
+			if(typeof id === "number")
+				alreadyImportedModules[id] = true;
+		}
+		for(i = 0; i < modules.length; i++) {
+			var item = modules[i];
+			// skip already imported module
+			// this implementation is not 100% perfect for weird media query combinations
+			//  when a module is imported multiple times with different media queries.
+			//  I hope this will never occur (Hey this way we have smaller bundles)
+			if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
+				if(mediaQuery && !item[2]) {
+					item[2] = mediaQuery;
+				} else if(mediaQuery) {
+					item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
+				}
+				list.push(item);
+			}
+		}
+	};
+	return list;
+};
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports) {
+
+module.exports = "./../images/02Firstpicture.png";
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports) {
+
+/*
+	MIT License http://www.opensource.org/licenses/mit-license.php
+	Author Tobias Koppers @sokra
+*/
+var stylesInDom = {},
+	memoize = function(fn) {
+		var memo;
+		return function () {
+			if (typeof memo === "undefined") memo = fn.apply(this, arguments);
+			return memo;
+		};
+	},
+	isOldIE = memoize(function() {
+		return /msie [6-9]\b/.test(window.navigator.userAgent.toLowerCase());
+	}),
+	getHeadElement = memoize(function () {
+		return document.head || document.getElementsByTagName("head")[0];
+	}),
+	singletonElement = null,
+	singletonCounter = 0,
+	styleElementsInsertedAtTop = [];
+
+module.exports = function(list, options) {
+	if(typeof DEBUG !== "undefined" && DEBUG) {
+		if(typeof document !== "object") throw new Error("The style-loader cannot be used in a non-browser environment");
+	}
+
+	options = options || {};
+	// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
+	// tags it will allow on a page
+	if (typeof options.singleton === "undefined") options.singleton = isOldIE();
+
+	// By default, add <style> tags to the bottom of <head>.
+	if (typeof options.insertAt === "undefined") options.insertAt = "bottom";
+
+	var styles = listToStyles(list);
+	addStylesToDom(styles, options);
+
+	return function update(newList) {
+		var mayRemove = [];
+		for(var i = 0; i < styles.length; i++) {
+			var item = styles[i];
+			var domStyle = stylesInDom[item.id];
+			domStyle.refs--;
+			mayRemove.push(domStyle);
+		}
+		if(newList) {
+			var newStyles = listToStyles(newList);
+			addStylesToDom(newStyles, options);
+		}
+		for(var i = 0; i < mayRemove.length; i++) {
+			var domStyle = mayRemove[i];
+			if(domStyle.refs === 0) {
+				for(var j = 0; j < domStyle.parts.length; j++)
+					domStyle.parts[j]();
+				delete stylesInDom[domStyle.id];
+			}
+		}
+	};
+}
+
+function addStylesToDom(styles, options) {
+	for(var i = 0; i < styles.length; i++) {
+		var item = styles[i];
+		var domStyle = stylesInDom[item.id];
+		if(domStyle) {
+			domStyle.refs++;
+			for(var j = 0; j < domStyle.parts.length; j++) {
+				domStyle.parts[j](item.parts[j]);
+			}
+			for(; j < item.parts.length; j++) {
+				domStyle.parts.push(addStyle(item.parts[j], options));
+			}
+		} else {
+			var parts = [];
+			for(var j = 0; j < item.parts.length; j++) {
+				parts.push(addStyle(item.parts[j], options));
+			}
+			stylesInDom[item.id] = {id: item.id, refs: 1, parts: parts};
+		}
+	}
+}
+
+function listToStyles(list) {
+	var styles = [];
+	var newStyles = {};
+	for(var i = 0; i < list.length; i++) {
+		var item = list[i];
+		var id = item[0];
+		var css = item[1];
+		var media = item[2];
+		var sourceMap = item[3];
+		var part = {css: css, media: media, sourceMap: sourceMap};
+		if(!newStyles[id])
+			styles.push(newStyles[id] = {id: id, parts: [part]});
+		else
+			newStyles[id].parts.push(part);
+	}
+	return styles;
+}
+
+function insertStyleElement(options, styleElement) {
+	var head = getHeadElement();
+	var lastStyleElementInsertedAtTop = styleElementsInsertedAtTop[styleElementsInsertedAtTop.length - 1];
+	if (options.insertAt === "top") {
+		if(!lastStyleElementInsertedAtTop) {
+			head.insertBefore(styleElement, head.firstChild);
+		} else if(lastStyleElementInsertedAtTop.nextSibling) {
+			head.insertBefore(styleElement, lastStyleElementInsertedAtTop.nextSibling);
+		} else {
+			head.appendChild(styleElement);
+		}
+		styleElementsInsertedAtTop.push(styleElement);
+	} else if (options.insertAt === "bottom") {
+		head.appendChild(styleElement);
+	} else {
+		throw new Error("Invalid value for parameter 'insertAt'. Must be 'top' or 'bottom'.");
+	}
+}
+
+function removeStyleElement(styleElement) {
+	styleElement.parentNode.removeChild(styleElement);
+	var idx = styleElementsInsertedAtTop.indexOf(styleElement);
+	if(idx >= 0) {
+		styleElementsInsertedAtTop.splice(idx, 1);
+	}
+}
+
+function createStyleElement(options) {
+	var styleElement = document.createElement("style");
+	styleElement.type = "text/css";
+	insertStyleElement(options, styleElement);
+	return styleElement;
+}
+
+function addStyle(obj, options) {
+	var styleElement, update, remove;
+
+	if (options.singleton) {
+		var styleIndex = singletonCounter++;
+		styleElement = singletonElement || (singletonElement = createStyleElement(options));
+		update = applyToSingletonTag.bind(null, styleElement, styleIndex, false);
+		remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true);
+	} else {
+		styleElement = createStyleElement(options);
+		update = applyToTag.bind(null, styleElement);
+		remove = function() {
+			removeStyleElement(styleElement);
+		};
+	}
+
+	update(obj);
+
+	return function updateStyle(newObj) {
+		if(newObj) {
+			if(newObj.css === obj.css && newObj.media === obj.media && newObj.sourceMap === obj.sourceMap)
+				return;
+			update(obj = newObj);
+		} else {
+			remove();
+		}
+	};
+}
+
+var replaceText = (function () {
+	var textStore = [];
+
+	return function (index, replacement) {
+		textStore[index] = replacement;
+		return textStore.filter(Boolean).join('\n');
+	};
+})();
+
+function applyToSingletonTag(styleElement, index, remove, obj) {
+	var css = remove ? "" : obj.css;
+
+	if (styleElement.styleSheet) {
+		styleElement.styleSheet.cssText = replaceText(index, css);
+	} else {
+		var cssNode = document.createTextNode(css);
+		var childNodes = styleElement.childNodes;
+		if (childNodes[index]) styleElement.removeChild(childNodes[index]);
+		if (childNodes.length) {
+			styleElement.insertBefore(cssNode, childNodes[index]);
+		} else {
+			styleElement.appendChild(cssNode);
+		}
+	}
+}
+
+function applyToTag(styleElement, obj) {
+	var css = obj.css;
+	var media = obj.media;
+	var sourceMap = obj.sourceMap;
+
+	if (media) {
+		styleElement.setAttribute("media", media);
+	}
+
+	if (sourceMap) {
+		// https://developer.chrome.com/devtools/docs/javascript-debugging
+		// this makes source maps inside style tags work properly in Chrome
+		css += '\n/*# sourceURL=' + sourceMap.sources[0] + ' */';
+		// http://stackoverflow.com/a/26603875
+		css += "\n/*# sourceMappingURL=data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + " */";
+	}
+
+	if (styleElement.styleSheet) {
+		styleElement.styleSheet.cssText = css;
+	} else {
+		while(styleElement.firstChild) {
+			styleElement.removeChild(styleElement.firstChild);
+		}
+		styleElement.appendChild(document.createTextNode(css));
+	}
+}
+
+
+/***/ }),
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
@@ -17108,305 +17392,27 @@ return jQuery;
 
 
 /***/ }),
-/* 4 */
-/***/ (function(module, exports) {
-
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-// css base code, injected by the css-loader
-module.exports = function() {
-	var list = [];
-
-	// return the list of modules as css string
-	list.toString = function toString() {
-		var result = [];
-		for(var i = 0; i < this.length; i++) {
-			var item = this[i];
-			if(item[2]) {
-				result.push("@media " + item[2] + "{" + item[1] + "}");
-			} else {
-				result.push(item[1]);
-			}
-		}
-		return result.join("");
-	};
-
-	// import a list of modules into the list
-	list.i = function(modules, mediaQuery) {
-		if(typeof modules === "string")
-			modules = [[null, modules, ""]];
-		var alreadyImportedModules = {};
-		for(var i = 0; i < this.length; i++) {
-			var id = this[i][0];
-			if(typeof id === "number")
-				alreadyImportedModules[id] = true;
-		}
-		for(i = 0; i < modules.length; i++) {
-			var item = modules[i];
-			// skip already imported module
-			// this implementation is not 100% perfect for weird media query combinations
-			//  when a module is imported multiple times with different media queries.
-			//  I hope this will never occur (Hey this way we have smaller bundles)
-			if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
-				if(mediaQuery && !item[2]) {
-					item[2] = mediaQuery;
-				} else if(mediaQuery) {
-					item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
-				}
-				list.push(item);
-			}
-		}
-	};
-	return list;
-};
-
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports) {
-
-/*
-	MIT License http://www.opensource.org/licenses/mit-license.php
-	Author Tobias Koppers @sokra
-*/
-var stylesInDom = {},
-	memoize = function(fn) {
-		var memo;
-		return function () {
-			if (typeof memo === "undefined") memo = fn.apply(this, arguments);
-			return memo;
-		};
-	},
-	isOldIE = memoize(function() {
-		return /msie [6-9]\b/.test(window.navigator.userAgent.toLowerCase());
-	}),
-	getHeadElement = memoize(function () {
-		return document.head || document.getElementsByTagName("head")[0];
-	}),
-	singletonElement = null,
-	singletonCounter = 0,
-	styleElementsInsertedAtTop = [];
-
-module.exports = function(list, options) {
-	if(typeof DEBUG !== "undefined" && DEBUG) {
-		if(typeof document !== "object") throw new Error("The style-loader cannot be used in a non-browser environment");
-	}
-
-	options = options || {};
-	// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
-	// tags it will allow on a page
-	if (typeof options.singleton === "undefined") options.singleton = isOldIE();
-
-	// By default, add <style> tags to the bottom of <head>.
-	if (typeof options.insertAt === "undefined") options.insertAt = "bottom";
-
-	var styles = listToStyles(list);
-	addStylesToDom(styles, options);
-
-	return function update(newList) {
-		var mayRemove = [];
-		for(var i = 0; i < styles.length; i++) {
-			var item = styles[i];
-			var domStyle = stylesInDom[item.id];
-			domStyle.refs--;
-			mayRemove.push(domStyle);
-		}
-		if(newList) {
-			var newStyles = listToStyles(newList);
-			addStylesToDom(newStyles, options);
-		}
-		for(var i = 0; i < mayRemove.length; i++) {
-			var domStyle = mayRemove[i];
-			if(domStyle.refs === 0) {
-				for(var j = 0; j < domStyle.parts.length; j++)
-					domStyle.parts[j]();
-				delete stylesInDom[domStyle.id];
-			}
-		}
-	};
-}
-
-function addStylesToDom(styles, options) {
-	for(var i = 0; i < styles.length; i++) {
-		var item = styles[i];
-		var domStyle = stylesInDom[item.id];
-		if(domStyle) {
-			domStyle.refs++;
-			for(var j = 0; j < domStyle.parts.length; j++) {
-				domStyle.parts[j](item.parts[j]);
-			}
-			for(; j < item.parts.length; j++) {
-				domStyle.parts.push(addStyle(item.parts[j], options));
-			}
-		} else {
-			var parts = [];
-			for(var j = 0; j < item.parts.length; j++) {
-				parts.push(addStyle(item.parts[j], options));
-			}
-			stylesInDom[item.id] = {id: item.id, refs: 1, parts: parts};
-		}
-	}
-}
-
-function listToStyles(list) {
-	var styles = [];
-	var newStyles = {};
-	for(var i = 0; i < list.length; i++) {
-		var item = list[i];
-		var id = item[0];
-		var css = item[1];
-		var media = item[2];
-		var sourceMap = item[3];
-		var part = {css: css, media: media, sourceMap: sourceMap};
-		if(!newStyles[id])
-			styles.push(newStyles[id] = {id: id, parts: [part]});
-		else
-			newStyles[id].parts.push(part);
-	}
-	return styles;
-}
-
-function insertStyleElement(options, styleElement) {
-	var head = getHeadElement();
-	var lastStyleElementInsertedAtTop = styleElementsInsertedAtTop[styleElementsInsertedAtTop.length - 1];
-	if (options.insertAt === "top") {
-		if(!lastStyleElementInsertedAtTop) {
-			head.insertBefore(styleElement, head.firstChild);
-		} else if(lastStyleElementInsertedAtTop.nextSibling) {
-			head.insertBefore(styleElement, lastStyleElementInsertedAtTop.nextSibling);
-		} else {
-			head.appendChild(styleElement);
-		}
-		styleElementsInsertedAtTop.push(styleElement);
-	} else if (options.insertAt === "bottom") {
-		head.appendChild(styleElement);
-	} else {
-		throw new Error("Invalid value for parameter 'insertAt'. Must be 'top' or 'bottom'.");
-	}
-}
-
-function removeStyleElement(styleElement) {
-	styleElement.parentNode.removeChild(styleElement);
-	var idx = styleElementsInsertedAtTop.indexOf(styleElement);
-	if(idx >= 0) {
-		styleElementsInsertedAtTop.splice(idx, 1);
-	}
-}
-
-function createStyleElement(options) {
-	var styleElement = document.createElement("style");
-	styleElement.type = "text/css";
-	insertStyleElement(options, styleElement);
-	return styleElement;
-}
-
-function addStyle(obj, options) {
-	var styleElement, update, remove;
-
-	if (options.singleton) {
-		var styleIndex = singletonCounter++;
-		styleElement = singletonElement || (singletonElement = createStyleElement(options));
-		update = applyToSingletonTag.bind(null, styleElement, styleIndex, false);
-		remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true);
-	} else {
-		styleElement = createStyleElement(options);
-		update = applyToTag.bind(null, styleElement);
-		remove = function() {
-			removeStyleElement(styleElement);
-		};
-	}
-
-	update(obj);
-
-	return function updateStyle(newObj) {
-		if(newObj) {
-			if(newObj.css === obj.css && newObj.media === obj.media && newObj.sourceMap === obj.sourceMap)
-				return;
-			update(obj = newObj);
-		} else {
-			remove();
-		}
-	};
-}
-
-var replaceText = (function () {
-	var textStore = [];
-
-	return function (index, replacement) {
-		textStore[index] = replacement;
-		return textStore.filter(Boolean).join('\n');
-	};
-})();
-
-function applyToSingletonTag(styleElement, index, remove, obj) {
-	var css = remove ? "" : obj.css;
-
-	if (styleElement.styleSheet) {
-		styleElement.styleSheet.cssText = replaceText(index, css);
-	} else {
-		var cssNode = document.createTextNode(css);
-		var childNodes = styleElement.childNodes;
-		if (childNodes[index]) styleElement.removeChild(childNodes[index]);
-		if (childNodes.length) {
-			styleElement.insertBefore(cssNode, childNodes[index]);
-		} else {
-			styleElement.appendChild(cssNode);
-		}
-	}
-}
-
-function applyToTag(styleElement, obj) {
-	var css = obj.css;
-	var media = obj.media;
-	var sourceMap = obj.sourceMap;
-
-	if (media) {
-		styleElement.setAttribute("media", media);
-	}
-
-	if (sourceMap) {
-		// https://developer.chrome.com/devtools/docs/javascript-debugging
-		// this makes source maps inside style tags work properly in Chrome
-		css += '\n/*# sourceURL=' + sourceMap.sources[0] + ' */';
-		// http://stackoverflow.com/a/26603875
-		css += "\n/*# sourceMappingURL=data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + " */";
-	}
-
-	if (styleElement.styleSheet) {
-		styleElement.styleSheet.cssText = css;
-	} else {
-		while(styleElement.firstChild) {
-			styleElement.removeChild(styleElement.firstChild);
-		}
-		styleElement.appendChild(document.createTextNode(css));
-	}
-}
-
-
-/***/ }),
-/* 6 */,
-/* 7 */
+/* 7 */,
+/* 8 */
 /***/ (function(module, exports) {
 
 module.exports = "./../images/20Bottompicture.png";
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __vue_exports__, __vue_options__
 var __vue_styles__ = {}
 
 /* styles */
-__webpack_require__(94)
+__webpack_require__(95)
 
 /* script */
-__vue_exports__ = __webpack_require__(65)
+__vue_exports__ = __webpack_require__(66)
 
 /* template */
-var __vue_template__ = __webpack_require__(86)
+var __vue_template__ = __webpack_require__(87)
 __vue_options__ = __vue_exports__ = __vue_exports__ || {}
 if (
   typeof __vue_exports__.default === "object" ||
@@ -17441,20 +17447,20 @@ module.exports = __vue_exports__
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __vue_exports__, __vue_options__
 var __vue_styles__ = {}
 
 /* styles */
-__webpack_require__(98)
+__webpack_require__(99)
 
 /* script */
-__vue_exports__ = __webpack_require__(67)
+__vue_exports__ = __webpack_require__(68)
 
 /* template */
-var __vue_template__ = __webpack_require__(90)
+var __vue_template__ = __webpack_require__(91)
 __vue_options__ = __vue_exports__ = __vue_exports__ || {}
 if (
   typeof __vue_exports__.default === "object" ||
@@ -17489,24 +17495,24 @@ module.exports = __vue_exports__
 
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(4)();
+exports = module.exports = __webpack_require__(3)();
 // imports
 
 
 // module
-exports.push([module.i, "\n*[data-v-097150d0] {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n  font-family: Arial, \"Microsoft YaHei\", sans-serif;\n  color: #212121;\n  word-break: break-all;\n}\n.clearfix[data-v-097150d0]:after {\n  content: \"\";\n  display: block;\n  zoom: 1;\n  clear: both;\n  height: 0;\n}\n.hide[data-v-097150d0] {\n  display: none;\n  visibility: hidden;\n  width: 0;\n  height: 0;\n}\nli[data-v-097150d0] {\n  list-style: none;\n}\n.lr-tb[data-v-097150d0] {\n  -webkit-writing-mode: horizontal-tb;\n  writing-mode: lr-tb;\n  writing-mode: horizontal-tb;\n}\n.tb-rl[data-v-097150d0] {\n  -webkit-writing-mode: vertical-rl;\n  writing-mode: tb-rl;\n  writing-mode: vertical-rl;\n}\n.tb-lr[data-v-097150d0] {\n  -webkit-writing-mode: vertical-lr;\n  writing-mode: tb-rl;\n  writing-mode: vertical-lr;\n}\n.con_text *[data-v-097150d0] {\n  font-size: 14px;\n}\n.con_text img[data-v-097150d0] {\n  display: block;\n  max-width: 490px;\n  margin: 20px auto;\n}\n.con_text p[data-v-097150d0] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n}\n.con_text span[data-v-097150d0] {\n  padding-bottom: 20px;\n  font-size: 14px;\n  font-weight: normal;\n  display: block;\n}\n.con_text h5[data-v-097150d0] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 16px;\n  padding-bottom: 30px;\n}\n.con_text b[data-v-097150d0] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 12px;\n  font-weight: normal;\n  padding-bottom: 20px;\n}\n.con_text > .con_image[data-v-097150d0] {\n  display: flex;\n  justify-content: space-around;\n  margin: 0 auto;\n}\n/* 可以设置不同的进入和离开动画 */\n/* 设置持续时间和动画函数 */\n.slide-fade-enter-active[data-v-097150d0] {\n  transition: all .3s ease;\n}\n.slide-fade-leave-active[data-v-097150d0] {\n  transition: all 0s cubic-bezier(1, 0.5, 0.8, 1);\n}\n.slide-fade-enter[data-v-097150d0],\n.slide-fade-leave-to[data-v-097150d0] {\n  transform: translateX(10px);\n  opacity: 0;\n}\n.fade-enter-active[data-v-097150d0],\n.fade-leave-active[data-v-097150d0] {\n  transition: opacity .5s;\n}\n.fade-enter[data-v-097150d0],\n.fade-leave-to[data-v-097150d0] {\n  opacity: 0;\n}\n#water[data-v-097150d0] {\n  position: absolute;\n  width: calc(100% + 100px);\n  height: calc(100% + 100px);\n  background-image: url(" + __webpack_require__(30) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\n.footer[data-v-097150d0] {\n  position: relative;\n}\n.footer_box[data-v-097150d0] {\n  position: relative;\n  width: 984px;\n  background: rgba(255, 255, 255, 0.5);\n  padding: 0 70px;\n  border-radius: 5px;\n}\n.footer_box > .footer_content[data-v-097150d0] {\n  position: relative;\n  padding-top: 90px;\n}\n.footer_box > .footer_content > div[data-v-097150d0] {\n  position: relative;\n  display: block;\n  float: left;\n  margin-left: 110px;\n  margin-bottom: 90px;\n}\n.footer_box > .footer_content > div > h5[data-v-097150d0] {\n  display: block;\n  font-size: 14px;\n  font-weight: normal;\n  color: #212121;\n  width: 60px;\n  text-align: center;\n  cursor: pointer;\n}\n.footer_box > .footer_content > div > ul[data-v-097150d0] {\n  position: relative;\n  width: 60px;\n  margin-top: 25px;\n}\n.footer_box > .footer_content > div > ul > li[data-v-097150d0] {\n  position: relative;\n  float: left;\n  margin-bottom: 12px;\n  font-size: 12px;\n  color: #212121;\n  white-space: nowrap;\n  left: 50%;\n  transform: translateX(-50%);\n  -ms-transform: translateX(-50%);\n  /* IE 9 */\n  -moz-transform: translateX(-50%);\n  /* Firefox */\n  -webkit-transform: translateX(-50%);\n  /* Safari 和 Chrome */\n  -o-transform: translateX(-50%);\n  /* Opera */\n}\n.footer_box > .footer_content > .footer_logo[data-v-097150d0] {\n  position: relative;\n  width: 175px;\n  height: 130px;\n  margin-left: 0;\n}\n.footer_box > .footer_content > .footer_logo > img[data-v-097150d0] {\n  display: block;\n  margin: 0 auto;\n}\n.footer_box > .footer_content > .footer_logo > img[data-v-097150d0]:first-child {\n  width: 80px;\n  height: 80px;\n}\n.footer_box > .footer_content > .footer_logo > img[data-v-097150d0]:last-child {\n  width: 175px;\n  height: 25px;\n  margin-top: 25px;\n}\n.footer_box > hr[data-v-097150d0] {\n  border: none;\n  border-bottom: 1px solid #212121;\n}\n.footer_box > .footer_concat > .footer_wqw[data-v-097150d0] {\n  position: relative;\n  width: 224px;\n  display: flex;\n  justify-content: space-between;\n  margin: 0 auto;\n  margin-top: 40px;\n  margin-bottom: 30px;\n}\n.footer_box > .footer_concat > .footer_wqw > span > img[data-v-097150d0] {\n  display: block;\n  height: 27px;\n}\n.footer_box > .footer_concat > .footer_comp[data-v-097150d0] {\n  position: relative;\n  padding-bottom: 35px;\n}\n.footer_box > .footer_concat > .footer_comp > p[data-v-097150d0] {\n  font-size: 12px;\n  color: #212121;\n  text-align: center;\n}\n", ""]);
+exports.push([module.i, "\n*[data-v-097150d0] {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n  font-family: Arial, \"Microsoft YaHei\", sans-serif;\n  color: #212121;\n  word-break: break-all;\n}\n.clearfix[data-v-097150d0]:after {\n  content: \"\";\n  display: block;\n  zoom: 1;\n  clear: both;\n  height: 0;\n}\n.hide[data-v-097150d0] {\n  display: none;\n  visibility: hidden;\n  width: 0;\n  height: 0;\n}\nli[data-v-097150d0] {\n  list-style: none;\n}\n.lr-tb[data-v-097150d0] {\n  -webkit-writing-mode: horizontal-tb;\n  writing-mode: lr-tb;\n  writing-mode: horizontal-tb;\n}\n.tb-rl[data-v-097150d0] {\n  -webkit-writing-mode: vertical-rl;\n  writing-mode: tb-rl;\n  writing-mode: vertical-rl;\n}\n.tb-lr[data-v-097150d0] {\n  -webkit-writing-mode: vertical-lr;\n  writing-mode: tb-rl;\n  writing-mode: vertical-lr;\n}\n.con_text *[data-v-097150d0] {\n  font-size: 14px;\n}\n.con_text img[data-v-097150d0] {\n  display: block;\n  max-width: 490px;\n  margin: 20px auto;\n}\n.con_text p[data-v-097150d0] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n}\n.con_text span[data-v-097150d0] {\n  padding-bottom: 20px;\n  font-size: 14px;\n  font-weight: normal;\n  display: block;\n}\n.con_text h5[data-v-097150d0] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 16px;\n  padding-bottom: 30px;\n}\n.con_text b[data-v-097150d0] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 12px;\n  font-weight: normal;\n  padding-bottom: 20px;\n}\n.con_text > .con_image[data-v-097150d0] {\n  display: flex;\n  justify-content: space-around;\n  margin: 0 auto;\n}\n/* 可以设置不同的进入和离开动画 */\n/* 设置持续时间和动画函数 */\n.slide-fade-enter-active[data-v-097150d0] {\n  transition: all .3s ease;\n}\n.slide-fade-leave-active[data-v-097150d0] {\n  transition: all 0s cubic-bezier(1, 0.5, 0.8, 1);\n}\n.slide-fade-enter[data-v-097150d0],\n.slide-fade-leave-to[data-v-097150d0] {\n  transform: translateX(10px);\n  opacity: 0;\n}\n.fade-enter-active[data-v-097150d0],\n.fade-leave-active[data-v-097150d0] {\n  transition: opacity .5s;\n}\n.fade-enter[data-v-097150d0],\n.fade-leave-to[data-v-097150d0] {\n  opacity: 0;\n}\n#water[data-v-097150d0] {\n  position: absolute;\n  width: calc(100% + 100px);\n  height: calc(100% + 100px);\n  background-image: url(" + __webpack_require__(4) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\n.footer[data-v-097150d0] {\n  position: relative;\n}\n.footer_box[data-v-097150d0] {\n  position: relative;\n  width: 984px;\n  background: rgba(255, 255, 255, 0.5);\n  padding: 0 70px;\n  border-radius: 5px;\n}\n.footer_box > .footer_content[data-v-097150d0] {\n  position: relative;\n  padding-top: 90px;\n}\n.footer_box > .footer_content > div[data-v-097150d0] {\n  position: relative;\n  display: block;\n  float: left;\n  margin-left: 110px;\n  margin-bottom: 90px;\n}\n.footer_box > .footer_content > div > h5[data-v-097150d0] {\n  display: block;\n  font-size: 14px;\n  font-weight: normal;\n  color: #212121;\n  width: 60px;\n  text-align: center;\n  cursor: pointer;\n}\n.footer_box > .footer_content > div > ul[data-v-097150d0] {\n  position: relative;\n  width: 60px;\n  margin-top: 25px;\n}\n.footer_box > .footer_content > div > ul > li[data-v-097150d0] {\n  position: relative;\n  float: left;\n  margin-bottom: 12px;\n  font-size: 12px;\n  color: #212121;\n  white-space: nowrap;\n  left: 50%;\n  transform: translateX(-50%);\n  -ms-transform: translateX(-50%);\n  /* IE 9 */\n  -moz-transform: translateX(-50%);\n  /* Firefox */\n  -webkit-transform: translateX(-50%);\n  /* Safari 和 Chrome */\n  -o-transform: translateX(-50%);\n  /* Opera */\n}\n.footer_box > .footer_content > .footer_logo[data-v-097150d0] {\n  position: relative;\n  width: 175px;\n  height: 130px;\n  margin-left: 0;\n}\n.footer_box > .footer_content > .footer_logo > img[data-v-097150d0] {\n  display: block;\n  margin: 0 auto;\n}\n.footer_box > .footer_content > .footer_logo > img[data-v-097150d0]:first-child {\n  width: 80px;\n  height: 80px;\n}\n.footer_box > .footer_content > .footer_logo > img[data-v-097150d0]:last-child {\n  width: 175px;\n  height: 25px;\n  margin-top: 25px;\n}\n.footer_box > hr[data-v-097150d0] {\n  border: none;\n  border-bottom: 1px solid #212121;\n}\n.footer_box > .footer_concat > .footer_wqw[data-v-097150d0] {\n  position: relative;\n  width: 224px;\n  display: flex;\n  justify-content: space-between;\n  margin: 0 auto;\n  margin-top: 40px;\n  margin-bottom: 30px;\n}\n.footer_box > .footer_concat > .footer_wqw > span > img[data-v-097150d0] {\n  display: block;\n  height: 27px;\n}\n.footer_box > .footer_concat > .footer_comp[data-v-097150d0] {\n  position: relative;\n  padding-bottom: 35px;\n}\n.footer_box > .footer_concat > .footer_comp > p[data-v-097150d0] {\n  font-size: 12px;\n  color: #212121;\n  text-align: center;\n}\n", ""]);
 
 // exports
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(4)();
+exports = module.exports = __webpack_require__(3)();
 // imports
 
 
@@ -17517,29 +17523,15 @@ exports.push([module.i, "", ""]);
 
 
 /***/ }),
-/* 12 */
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(4)();
-// imports
-
-
-// module
-exports.push([module.i, "\n*[data-v-31208b80] {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n  font-family: Arial, \"Microsoft YaHei\", sans-serif;\n  color: #212121;\n  word-break: break-all;\n}\n.clearfix[data-v-31208b80]:after {\n  content: \"\";\n  display: block;\n  zoom: 1;\n  clear: both;\n  height: 0;\n}\n.hide[data-v-31208b80] {\n  display: none;\n  visibility: hidden;\n  width: 0;\n  height: 0;\n}\nli[data-v-31208b80] {\n  list-style: none;\n}\n.lr-tb[data-v-31208b80] {\n  -webkit-writing-mode: horizontal-tb;\n  writing-mode: lr-tb;\n  writing-mode: horizontal-tb;\n}\n.tb-rl[data-v-31208b80] {\n  -webkit-writing-mode: vertical-rl;\n  writing-mode: tb-rl;\n  writing-mode: vertical-rl;\n}\n.tb-lr[data-v-31208b80] {\n  -webkit-writing-mode: vertical-lr;\n  writing-mode: tb-rl;\n  writing-mode: vertical-lr;\n}\n.con_text *[data-v-31208b80] {\n  font-size: 14px;\n}\n.con_text img[data-v-31208b80] {\n  display: block;\n  max-width: 490px;\n  margin: 20px auto;\n}\n.con_text p[data-v-31208b80] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n}\n.con_text span[data-v-31208b80] {\n  padding-bottom: 20px;\n  font-size: 14px;\n  font-weight: normal;\n  display: block;\n}\n.con_text h5[data-v-31208b80] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 16px;\n  padding-bottom: 30px;\n}\n.con_text b[data-v-31208b80] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 12px;\n  font-weight: normal;\n  padding-bottom: 20px;\n}\n.con_text > .con_image[data-v-31208b80] {\n  display: flex;\n  justify-content: space-around;\n  margin: 0 auto;\n}\n/* 可以设置不同的进入和离开动画 */\n/* 设置持续时间和动画函数 */\n.slide-fade-enter-active[data-v-31208b80] {\n  transition: all .3s ease;\n}\n.slide-fade-leave-active[data-v-31208b80] {\n  transition: all 0s cubic-bezier(1, 0.5, 0.8, 1);\n}\n.slide-fade-enter[data-v-31208b80],\n.slide-fade-leave-to[data-v-31208b80] {\n  transform: translateX(10px);\n  opacity: 0;\n}\n.fade-enter-active[data-v-31208b80],\n.fade-leave-active[data-v-31208b80] {\n  transition: opacity .5s;\n}\n.fade-enter[data-v-31208b80],\n.fade-leave-to[data-v-31208b80] {\n  opacity: 0;\n}\n#water[data-v-31208b80] {\n  position: absolute;\n  width: calc(100% + 100px);\n  height: calc(100% + 100px);\n  background-image: url(" + __webpack_require__(30) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\n.manager_area[data-v-31208b80] {\n  position: relative;\n  margin: 0 auto;\n  width: 640px;\n  height: 410px;\n}\n.manager_area > .manager_info_box[data-v-31208b80] {\n  position: relative;\n  width: 100%;\n  height: 100%;\n  overflow: hidden;\n}\n.manager_area > .manager_info_box > ul[data-v-31208b80] {\n  position: relative;\n}\n.manager_area > .manager_info_box > ul > li[data-v-31208b80] {\n  position: absolute;\n  width: 640px;\n  left: 0;\n  top: 0;\n  background: #fff;\n}\n.manager_area > .manager_info_box > ul > li > .manager_info_pic[data-v-31208b80] {\n  position: relative;\n  padding-top: 25px;\n}\n.manager_area > .manager_info_box > ul > li > .manager_info_pic > img[data-v-31208b80] {\n  margin: 0 auto;\n  display: block;\n  width: 154px;\n  height: 154px;\n  border-radius: 50%;\n}\n.manager_area > .manager_info_box > ul > li > .manager_info_pic > p[data-v-31208b80] {\n  font-size: 14px;\n  text-align: center;\n  padding-top: 10px;\n}\n.manager_area > .manager_info_box > ul > li > .manager_info_pic > p > span[data-v-31208b80] {\n  letter-spacing: 5px;\n}\n.manager_area > .manager_info_box > ul > li > .manager_info_pic > p > b[data-v-31208b80] {\n  font-weight: normal;\n  font-size: 12px;\n}\n.manager_area > .manager_info_box > ul > li > .manager_info_text[data-v-31208b80] {\n  position: relative;\n  width: 640px;\n  height: 150px;\n  margin-top: 25px;\n  border: 1px solid #212121;\n}\n.manager_area > .manager_info_box > ul > li > .manager_info_text > p[data-v-31208b80] {\n  position: relative;\n  padding: 0 30px;\n  font-size: 14px;\n  text-align: center;\n  top: 50%;\n  transform: translateY(-50%);\n  -ms-transform: translateY(-50%);\n  /* IE 9 */\n  -moz-transform: translateY(-50%);\n  /* Firefox */\n  -webkit-transform: translateY(-50%);\n  /* Safari 和 Chrome */\n  -o-transform: translateY(-50%);\n  /* Opera */\n}\n@keyframes preMove {\nfrom {\n    left: -640px;\n}\nto {\n    left: 0px;\n}\n}\n@-webkit-keyframes preMove {\n  /*Safari and Chrome*/\nfrom {\n    left: -640px;\n}\nto {\n    left: 0px;\n}\n}\n@keyframes nextMove {\nfrom {\n    left: 640px;\n}\nto {\n    left: 0px;\n}\n}\n@-webkit-keyframes nextMove {\n  /*Safari and Chrome*/\nfrom {\n    left: 640px;\n}\nto {\n    left: 0px;\n}\n}\n.manager_area > .manager_info_box > ul .mg_slide_preActive[data-v-31208b80] {\n  animation: preMove 0.5s linear 1;\n  -webkit-animation: preMove 0.5s linear 1;\n  /*Safari and Chrome*/\n}\n.manager_area > .manager_info_box > ul .mg_slide_nextActive[data-v-31208b80] {\n  animation: nextMove 0.5s linear 1;\n  -webkit-animation: nextMove 0.5s linear 1;\n  /*Safari and Chrome*/\n}\n.manager_area > .manager_control[data-v-31208b80] {\n  position: absolute;\n  width: 100%;\n  bottom: 110px;\n  z-index: 98;\n}\n.manager_area > .manager_control > span[data-v-31208b80] {\n  position: absolute;\n  padding: 10px 10px;\n  border: none;\n  background: rgba(0, 0, 0, 0);\n  font-size: 26px;\n  cursor: pointer;\n}\n.manager_area > .manager_control > span[data-v-31208b80]:active {\n  background: rgba(0, 0, 0, 0.1);\n}\n.manager_area > .manager_control > span[data-v-31208b80]:first-child {\n  left: -40px;\n}\n.manager_area > .manager_control > span[data-v-31208b80]:last-child {\n  right: -40px;\n}\n", ""]);
-
-// exports
-
-
-/***/ }),
 /* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(4)();
+exports = module.exports = __webpack_require__(3)();
 // imports
 
 
 // module
-exports.push([module.i, "\n*[data-v-3d00e12a] {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n  font-family: Arial, \"Microsoft YaHei\", sans-serif;\n  color: #212121;\n  word-break: break-all;\n}\n.clearfix[data-v-3d00e12a]:after {\n  content: \"\";\n  display: block;\n  zoom: 1;\n  clear: both;\n  height: 0;\n}\n.hide[data-v-3d00e12a] {\n  display: none;\n  visibility: hidden;\n  width: 0;\n  height: 0;\n}\nli[data-v-3d00e12a] {\n  list-style: none;\n}\n.lr-tb[data-v-3d00e12a] {\n  -webkit-writing-mode: horizontal-tb;\n  writing-mode: lr-tb;\n  writing-mode: horizontal-tb;\n}\n.tb-rl[data-v-3d00e12a] {\n  -webkit-writing-mode: vertical-rl;\n  writing-mode: tb-rl;\n  writing-mode: vertical-rl;\n}\n.tb-lr[data-v-3d00e12a] {\n  -webkit-writing-mode: vertical-lr;\n  writing-mode: tb-rl;\n  writing-mode: vertical-lr;\n}\n.con_text *[data-v-3d00e12a] {\n  font-size: 14px;\n}\n.con_text img[data-v-3d00e12a] {\n  display: block;\n  max-width: 490px;\n  margin: 20px auto;\n}\n.con_text p[data-v-3d00e12a] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n}\n.con_text span[data-v-3d00e12a] {\n  padding-bottom: 20px;\n  font-size: 14px;\n  font-weight: normal;\n  display: block;\n}\n.con_text h5[data-v-3d00e12a] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 16px;\n  padding-bottom: 30px;\n}\n.con_text b[data-v-3d00e12a] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 12px;\n  font-weight: normal;\n  padding-bottom: 20px;\n}\n.con_text > .con_image[data-v-3d00e12a] {\n  display: flex;\n  justify-content: space-around;\n  margin: 0 auto;\n}\n/* 可以设置不同的进入和离开动画 */\n/* 设置持续时间和动画函数 */\n.slide-fade-enter-active[data-v-3d00e12a] {\n  transition: all .3s ease;\n}\n.slide-fade-leave-active[data-v-3d00e12a] {\n  transition: all 0s cubic-bezier(1, 0.5, 0.8, 1);\n}\n.slide-fade-enter[data-v-3d00e12a],\n.slide-fade-leave-to[data-v-3d00e12a] {\n  transform: translateX(10px);\n  opacity: 0;\n}\n.fade-enter-active[data-v-3d00e12a],\n.fade-leave-active[data-v-3d00e12a] {\n  transition: opacity .5s;\n}\n.fade-enter[data-v-3d00e12a],\n.fade-leave-to[data-v-3d00e12a] {\n  opacity: 0;\n}\n#water[data-v-3d00e12a] {\n  position: absolute;\n  width: calc(100% + 100px);\n  height: calc(100% + 100px);\n  background-image: url(" + __webpack_require__(30) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\n.contact_top[data-v-3d00e12a] {\n  position: relative;\n  height: 490px;\n  background-image: url(" + __webpack_require__(57) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\n.contact_top > .contact_topTab[data-v-3d00e12a] {\n  position: relative;\n  width: 1200px;\n  padding-top: 32px;\n  margin: 0 auto;\n}\n.contact_top > .contact_topTab > .top[data-v-3d00e12a] {\n  background: #fffaf7;\n}\n.contact_assort[data-v-3d00e12a] {\n  position: relative;\n}\n.contact_assort > .contact_assort_area[data-v-3d00e12a] {\n  position: relative;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaTab[data-v-3d00e12a] {\n  position: relative;\n  display: flex;\n  justify-content: space-around;\n  width: 490px;\n  margin: 0 auto;\n  padding: 35px 50px;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaTab > span[data-v-3d00e12a] {\n  font-size: 12px;\n  cursor: pointer;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaTab > i[data-v-3d00e12a] {\n  line-height: 12px;\n  border: 1px solid #8EA595;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaTab .assortTabActive[data-v-3d00e12a] {\n  color: #8EA595;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail[data-v-3d00e12a] {\n  position: relative;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_feedback[data-v-3d00e12a],\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail .ca_areaDetail_contact[data-v-3d00e12a],\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail .ca_areaDetail_recruit[data-v-3d00e12a] {\n  position: relative;\n  padding-top: 85px;\n  padding-bottom: 150px;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_feedback[data-v-3d00e12a] {\n  width: 800px;\n  margin: 0 auto;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_feedback > .ca_areaDetail_feedback_contactInfo[data-v-3d00e12a] {\n  position: relative;\n  float: left;\n  width: 300px;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_feedback > .ca_areaDetail_feedback_contactInfo > p[data-v-3d00e12a] {\n  font-size: 14px;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_feedback > .ca_areaDetail_feedback_contactInfo > p > img[data-v-3d00e12a] {\n  display: block;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_feedback > .ca_areaDetail_feedback_contactInfo > p > b[data-v-3d00e12a] {\n  font-weight: normal;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_feedback > .ca_areaDetail_feedback_contactInfo > hr[data-v-3d00e12a] {\n  margin: 15px 0;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_feedback > .ca_areaDetail_feedback_input[data-v-3d00e12a] {\n  position: relative;\n  float: right;\n  width: 360px;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_feedback > .ca_areaDetail_feedback_input > p[data-v-3d00e12a] {\n  font-size: 14px;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_feedback > .ca_areaDetail_feedback_input > p > input[type=text][data-v-3d00e12a],\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_feedback > .ca_areaDetail_feedback_input > p input[type=textarea][data-v-3d00e12a] {\n  width: 100%;\n  line-height: 26px;\n  padding-left: 8px;\n  margin-bottom: 20px;\n  border: 1px solid #212121;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_feedback > .ca_areaDetail_feedback_input > p > input[type=button][data-v-3d00e12a] {\n  padding: 4px 12px;\n  background: #fff;\n  border: 1px solid #212121;\n  cursor: pointer;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_feedback > .ca_areaDetail_feedback_input > p > textarea[data-v-3d00e12a] {\n  width: 100%;\n  line-height: 26px;\n  padding-left: 8px;\n  margin-bottom: 20px;\n  border: 1px solid #212121;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_contact[data-v-3d00e12a] {\n  width: 800px;\n  margin: 0 auto;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_contact > .ca_areaDetail_contact_tab[data-v-3d00e12a] {\n  position: relative;\n  display: flex;\n  justify-content: space-around;\n  margin: 0 auto;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_contact > .ca_areaDetail_contact_tab > span[data-v-3d00e12a] {\n  display: block;\n  cursor: pointer;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_contact > .ca_areaDetail_contact_tab > span > img[data-v-3d00e12a] {\n  display: block;\n  width: 140px;\n  height: 140px;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_contact > .ca_areaDetail_contact_text[data-v-3d00e12a] {\n  position: relative;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_contact > .ca_areaDetail_contact_text > div[data-v-3d00e12a] {\n  position: relative;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_contact > .ca_areaDetail_contact_text > div > p[data-v-3d00e12a] {\n  position: relative;\n  float: left;\n  left: 50%;\n  transform: translateX(-50%);\n  -ms-transform: translateX(-50%);\n  /* IE 9 */\n  -moz-transform: translateX(-50%);\n  /* Firefox */\n  -webkit-transform: translateX(-50%);\n  /* Safari 和 Chrome */\n  -o-transform: translateX(-50%);\n  /* Opera */\n  padding: 25px 165px;\n  margin-top: 50px;\n  border-top: 1px solid #8EA595;\n  font-size: 14px;\n  color: #1F2020;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit[data-v-3d00e12a] {\n  width: 490px;\n  margin: 0 auto;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_box[data-v-3d00e12a] {\n  position: relative;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_box > .ca_areaDetail_recruit_search > input[data-v-3d00e12a] {\n  display: block;\n  float: left;\n  width: 440px;\n  line-height: 30px;\n  padding-left: 8px;\n  font-size: 14px;\n  margin-right: 15px;\n  border: 1px solid #212121;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_box > .ca_areaDetail_recruit_search > span[data-v-3d00e12a] {\n  display: block;\n  float: left;\n  width: 30px;\n  height: 30px;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_box > .ca_areaDetail_recruit_search > span > img[data-v-3d00e12a] {\n  display: block;\n  margin: 0 auto;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_box > .ca_areaDetail_recruit_list[data-v-3d00e12a] {\n  position: relative;\n  padding-top: 15px;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_box > .ca_areaDetail_recruit_list > .recruit_list_nav[data-v-3d00e12a] {\n  position: relative;\n  background: #8EA595;\n  padding: 7px 0;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_box > .ca_areaDetail_recruit_list > .recruit_list_nav > span[data-v-3d00e12a] {\n  display: block;\n  float: left;\n  line-height: 1;\n  text-align: center;\n  border-right: 1px solid #fff;\n  color: #fff;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_box > .ca_areaDetail_recruit_list > .recruit_list_nav > span[data-v-3d00e12a]:last-child {\n  border-right: none;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_box > .ca_areaDetail_recruit_list > .recruit_list_ul[data-v-3d00e12a] {\n  position: relative;\n  padding-top: 20px;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_box > .ca_areaDetail_recruit_list > .recruit_list_ul > ul[data-v-3d00e12a] {\n  list-style: none;\n  overflow: auto;\n  max-height: 500px;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_box > .ca_areaDetail_recruit_list > .recruit_list_ul > ul > li[data-v-3d00e12a] {\n  position: relative;\n  padding: 7px 0;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_box > .ca_areaDetail_recruit_list > .recruit_list_ul > ul > li > span[data-v-3d00e12a] {\n  display: block;\n  float: left;\n  line-height: 1;\n  text-align: center;\n  border-right: 1px solid #fff;\n  color: #212121;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_detail[data-v-3d00e12a] {\n  position: relative;\n  background: #fff;\n  left: 0;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_detail > .ca_areaDetail_recruit_detail_close[data-v-3d00e12a] {\n  position: absolute;\n  right: -50px;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_detail > .ca_areaDetail_recruit_detail_close > i[data-v-3d00e12a] {\n  display: block;\n  font-style: normal;\n  height: 30px;\n  line-height: 30px;\n  width: 30px;\n  border: 1px solid #aaa;\n  border-radius: 50%;\n  text-align: center;\n  color: #aaa;\n  cursor: pointer;\n  font-size: 20px;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_detail > .ca_areaDetail_recruit_detail_close > i[data-v-3d00e12a]:active {\n  color: #212121;\n  border: 1px solid #212121;\n}\n.contact_footer[data-v-3d00e12a] {\n  position: relative;\n  height: 700px;\n  background-image: url(" + __webpack_require__(7) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\n.contact_footer > .contact_footerBox[data-v-3d00e12a] {\n  position: relative;\n  margin: 0 auto;\n  padding-top: 160px;\n  width: 984px;\n}\n", ""]);
+exports.push([module.i, "\n*[data-v-31208b80] {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n  font-family: Arial, \"Microsoft YaHei\", sans-serif;\n  color: #212121;\n  word-break: break-all;\n}\n.clearfix[data-v-31208b80]:after {\n  content: \"\";\n  display: block;\n  zoom: 1;\n  clear: both;\n  height: 0;\n}\n.hide[data-v-31208b80] {\n  display: none;\n  visibility: hidden;\n  width: 0;\n  height: 0;\n}\nli[data-v-31208b80] {\n  list-style: none;\n}\n.lr-tb[data-v-31208b80] {\n  -webkit-writing-mode: horizontal-tb;\n  writing-mode: lr-tb;\n  writing-mode: horizontal-tb;\n}\n.tb-rl[data-v-31208b80] {\n  -webkit-writing-mode: vertical-rl;\n  writing-mode: tb-rl;\n  writing-mode: vertical-rl;\n}\n.tb-lr[data-v-31208b80] {\n  -webkit-writing-mode: vertical-lr;\n  writing-mode: tb-rl;\n  writing-mode: vertical-lr;\n}\n.con_text *[data-v-31208b80] {\n  font-size: 14px;\n}\n.con_text img[data-v-31208b80] {\n  display: block;\n  max-width: 490px;\n  margin: 20px auto;\n}\n.con_text p[data-v-31208b80] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n}\n.con_text span[data-v-31208b80] {\n  padding-bottom: 20px;\n  font-size: 14px;\n  font-weight: normal;\n  display: block;\n}\n.con_text h5[data-v-31208b80] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 16px;\n  padding-bottom: 30px;\n}\n.con_text b[data-v-31208b80] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 12px;\n  font-weight: normal;\n  padding-bottom: 20px;\n}\n.con_text > .con_image[data-v-31208b80] {\n  display: flex;\n  justify-content: space-around;\n  margin: 0 auto;\n}\n/* 可以设置不同的进入和离开动画 */\n/* 设置持续时间和动画函数 */\n.slide-fade-enter-active[data-v-31208b80] {\n  transition: all .3s ease;\n}\n.slide-fade-leave-active[data-v-31208b80] {\n  transition: all 0s cubic-bezier(1, 0.5, 0.8, 1);\n}\n.slide-fade-enter[data-v-31208b80],\n.slide-fade-leave-to[data-v-31208b80] {\n  transform: translateX(10px);\n  opacity: 0;\n}\n.fade-enter-active[data-v-31208b80],\n.fade-leave-active[data-v-31208b80] {\n  transition: opacity .5s;\n}\n.fade-enter[data-v-31208b80],\n.fade-leave-to[data-v-31208b80] {\n  opacity: 0;\n}\n#water[data-v-31208b80] {\n  position: absolute;\n  width: calc(100% + 100px);\n  height: calc(100% + 100px);\n  background-image: url(" + __webpack_require__(4) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\n.manager_area[data-v-31208b80] {\n  position: relative;\n  margin: 0 auto;\n  width: 640px;\n  height: 410px;\n}\n.manager_area > .manager_info_box[data-v-31208b80] {\n  position: relative;\n  width: 100%;\n  height: 100%;\n  overflow: hidden;\n}\n.manager_area > .manager_info_box > ul[data-v-31208b80] {\n  position: relative;\n}\n.manager_area > .manager_info_box > ul > li[data-v-31208b80] {\n  position: absolute;\n  width: 640px;\n  left: 0;\n  top: 0;\n  background: #fff;\n}\n.manager_area > .manager_info_box > ul > li > .manager_info_pic[data-v-31208b80] {\n  position: relative;\n  padding-top: 25px;\n}\n.manager_area > .manager_info_box > ul > li > .manager_info_pic > img[data-v-31208b80] {\n  margin: 0 auto;\n  display: block;\n  width: 154px;\n  height: 154px;\n  border-radius: 50%;\n}\n.manager_area > .manager_info_box > ul > li > .manager_info_pic > p[data-v-31208b80] {\n  font-size: 14px;\n  text-align: center;\n  padding-top: 10px;\n}\n.manager_area > .manager_info_box > ul > li > .manager_info_pic > p > span[data-v-31208b80] {\n  letter-spacing: 5px;\n}\n.manager_area > .manager_info_box > ul > li > .manager_info_pic > p > b[data-v-31208b80] {\n  font-weight: normal;\n  font-size: 12px;\n}\n.manager_area > .manager_info_box > ul > li > .manager_info_text[data-v-31208b80] {\n  position: relative;\n  width: 640px;\n  height: 150px;\n  margin-top: 25px;\n  border: 1px solid #212121;\n}\n.manager_area > .manager_info_box > ul > li > .manager_info_text > p[data-v-31208b80] {\n  position: relative;\n  padding: 0 30px;\n  font-size: 14px;\n  text-align: center;\n  top: 50%;\n  transform: translateY(-50%);\n  -ms-transform: translateY(-50%);\n  /* IE 9 */\n  -moz-transform: translateY(-50%);\n  /* Firefox */\n  -webkit-transform: translateY(-50%);\n  /* Safari 和 Chrome */\n  -o-transform: translateY(-50%);\n  /* Opera */\n}\n@keyframes preMove {\nfrom {\n    left: -640px;\n}\nto {\n    left: 0px;\n}\n}\n@-webkit-keyframes preMove {\n  /*Safari and Chrome*/\nfrom {\n    left: -640px;\n}\nto {\n    left: 0px;\n}\n}\n@keyframes nextMove {\nfrom {\n    left: 640px;\n}\nto {\n    left: 0px;\n}\n}\n@-webkit-keyframes nextMove {\n  /*Safari and Chrome*/\nfrom {\n    left: 640px;\n}\nto {\n    left: 0px;\n}\n}\n.manager_area > .manager_info_box > ul .mg_slide_preActive[data-v-31208b80] {\n  animation: preMove 0.5s linear 1;\n  -webkit-animation: preMove 0.5s linear 1;\n  /*Safari and Chrome*/\n}\n.manager_area > .manager_info_box > ul .mg_slide_nextActive[data-v-31208b80] {\n  animation: nextMove 0.5s linear 1;\n  -webkit-animation: nextMove 0.5s linear 1;\n  /*Safari and Chrome*/\n}\n.manager_area > .manager_control[data-v-31208b80] {\n  position: absolute;\n  width: 100%;\n  bottom: 110px;\n  z-index: 98;\n}\n.manager_area > .manager_control > span[data-v-31208b80] {\n  position: absolute;\n  padding: 10px 10px;\n  border: none;\n  background: rgba(0, 0, 0, 0);\n  font-size: 26px;\n  cursor: pointer;\n}\n.manager_area > .manager_control > span[data-v-31208b80]:active {\n  background: rgba(0, 0, 0, 0.1);\n}\n.manager_area > .manager_control > span[data-v-31208b80]:first-child {\n  left: -40px;\n}\n.manager_area > .manager_control > span[data-v-31208b80]:last-child {\n  right: -40px;\n}\n", ""]);
 
 // exports
 
@@ -17548,12 +17540,12 @@ exports.push([module.i, "\n*[data-v-3d00e12a] {\n  margin: 0;\n  padding: 0;\n  
 /* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(4)();
+exports = module.exports = __webpack_require__(3)();
 // imports
 
 
 // module
-exports.push([module.i, "\n*[data-v-3e9f3ea8] {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n  font-family: Arial, \"Microsoft YaHei\", sans-serif;\n  color: #212121;\n  word-break: break-all;\n}\n.clearfix[data-v-3e9f3ea8]:after {\n  content: \"\";\n  display: block;\n  zoom: 1;\n  clear: both;\n  height: 0;\n}\n.hide[data-v-3e9f3ea8] {\n  display: none;\n  visibility: hidden;\n  width: 0;\n  height: 0;\n}\nli[data-v-3e9f3ea8] {\n  list-style: none;\n}\n.lr-tb[data-v-3e9f3ea8] {\n  -webkit-writing-mode: horizontal-tb;\n  writing-mode: lr-tb;\n  writing-mode: horizontal-tb;\n}\n.tb-rl[data-v-3e9f3ea8] {\n  -webkit-writing-mode: vertical-rl;\n  writing-mode: tb-rl;\n  writing-mode: vertical-rl;\n}\n.tb-lr[data-v-3e9f3ea8] {\n  -webkit-writing-mode: vertical-lr;\n  writing-mode: tb-rl;\n  writing-mode: vertical-lr;\n}\n.con_text *[data-v-3e9f3ea8] {\n  font-size: 14px;\n}\n.con_text img[data-v-3e9f3ea8] {\n  display: block;\n  max-width: 490px;\n  margin: 20px auto;\n}\n.con_text p[data-v-3e9f3ea8] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n}\n.con_text span[data-v-3e9f3ea8] {\n  padding-bottom: 20px;\n  font-size: 14px;\n  font-weight: normal;\n  display: block;\n}\n.con_text h5[data-v-3e9f3ea8] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 16px;\n  padding-bottom: 30px;\n}\n.con_text b[data-v-3e9f3ea8] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 12px;\n  font-weight: normal;\n  padding-bottom: 20px;\n}\n.con_text > .con_image[data-v-3e9f3ea8] {\n  display: flex;\n  justify-content: space-around;\n  margin: 0 auto;\n}\n/* 可以设置不同的进入和离开动画 */\n/* 设置持续时间和动画函数 */\n.slide-fade-enter-active[data-v-3e9f3ea8] {\n  transition: all .3s ease;\n}\n.slide-fade-leave-active[data-v-3e9f3ea8] {\n  transition: all 0s cubic-bezier(1, 0.5, 0.8, 1);\n}\n.slide-fade-enter[data-v-3e9f3ea8],\n.slide-fade-leave-to[data-v-3e9f3ea8] {\n  transform: translateX(10px);\n  opacity: 0;\n}\n.fade-enter-active[data-v-3e9f3ea8],\n.fade-leave-active[data-v-3e9f3ea8] {\n  transition: opacity .5s;\n}\n.fade-enter[data-v-3e9f3ea8],\n.fade-leave-to[data-v-3e9f3ea8] {\n  opacity: 0;\n}\n#water[data-v-3e9f3ea8] {\n  position: absolute;\n  width: calc(100% + 100px);\n  height: calc(100% + 100px);\n  background-image: url(" + __webpack_require__(30) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\n.top[data-v-3e9f3ea8] {\n  position: relative;\n}\n.top_tab[data-v-3e9f3ea8] {\n  position: relative;\n  width: 1200px;\n  margin: 0 auto;\n}\n.top_tab > .top_logo[data-v-3e9f3ea8] {\n  position: relative;\n  float: left;\n  padding: 6px;\n}\n.top_tab > .top_logo > img[data-v-3e9f3ea8] {\n  display: block;\n  width: 50px;\n  height: 50px;\n}\n.top_tab > .top_order[data-v-3e9f3ea8] {\n  position: relative;\n  float: left;\n  padding-top: 4px;\n  margin-left: 20px;\n}\n.top_tab > .top_order > p.ordersEn > span[data-v-3e9f3ea8] {\n  position: relative;\n  font-size: 14px;\n  font-weight: bold;\n  color: #212121;\n  line-height: 26px;\n  margin: 0 30px;\n  cursor: pointer;\n}\n.top_tab > .top_order > p.ordersEn > span > b[data-v-3e9f3ea8] {\n  position: absolute;\n  font-size: 12px;\n  font-weight: normal;\n  width: auto;\n  bottom: -27px;\n  text-align: center;\n  left: 50%;\n  line-height: 1;\n  white-space: nowrap;\n  transform: translateX(-50%);\n  -ms-transform: translateX(-50%);\n  /* IE 9 */\n  -moz-transform: translateX(-50%);\n  /* Firefox */\n  -webkit-transform: translateX(-50%);\n  /* Safari 和 Chrome */\n  -o-transform: translateX(-50%);\n  /* Opera */\n}\n.top_tab > .top_order > p.ordersEn .tabActive[data-v-3e9f3ea8] {\n  color: #8EA595;\n}\n.top_tab > .top_order > hr[data-v-3e9f3ea8] {\n  border: none;\n  border-bottom: 1px solid #212121;\n  cursor: pointer;\n}\n.top_tab > .top_others[data-v-3e9f3ea8] {\n  position: relative;\n  float: right;\n}\n.top_tab > .top_others > img[data-v-3e9f3ea8] {\n  float: left;\n  display: block;\n  width: 50px;\n  height: 50px;\n  padding: 8px;\n  margin: 6px 0;\n  background-repeat: no-repeat;\n  background-size: 135px 34px;\n}\n", ""]);
+exports.push([module.i, "\n*[data-v-3d00e12a] {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n  font-family: Arial, \"Microsoft YaHei\", sans-serif;\n  color: #212121;\n  word-break: break-all;\n}\n.clearfix[data-v-3d00e12a]:after {\n  content: \"\";\n  display: block;\n  zoom: 1;\n  clear: both;\n  height: 0;\n}\n.hide[data-v-3d00e12a] {\n  display: none;\n  visibility: hidden;\n  width: 0;\n  height: 0;\n}\nli[data-v-3d00e12a] {\n  list-style: none;\n}\n.lr-tb[data-v-3d00e12a] {\n  -webkit-writing-mode: horizontal-tb;\n  writing-mode: lr-tb;\n  writing-mode: horizontal-tb;\n}\n.tb-rl[data-v-3d00e12a] {\n  -webkit-writing-mode: vertical-rl;\n  writing-mode: tb-rl;\n  writing-mode: vertical-rl;\n}\n.tb-lr[data-v-3d00e12a] {\n  -webkit-writing-mode: vertical-lr;\n  writing-mode: tb-rl;\n  writing-mode: vertical-lr;\n}\n.con_text *[data-v-3d00e12a] {\n  font-size: 14px;\n}\n.con_text img[data-v-3d00e12a] {\n  display: block;\n  max-width: 490px;\n  margin: 20px auto;\n}\n.con_text p[data-v-3d00e12a] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n}\n.con_text span[data-v-3d00e12a] {\n  padding-bottom: 20px;\n  font-size: 14px;\n  font-weight: normal;\n  display: block;\n}\n.con_text h5[data-v-3d00e12a] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 16px;\n  padding-bottom: 30px;\n}\n.con_text b[data-v-3d00e12a] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 12px;\n  font-weight: normal;\n  padding-bottom: 20px;\n}\n.con_text > .con_image[data-v-3d00e12a] {\n  display: flex;\n  justify-content: space-around;\n  margin: 0 auto;\n}\n/* 可以设置不同的进入和离开动画 */\n/* 设置持续时间和动画函数 */\n.slide-fade-enter-active[data-v-3d00e12a] {\n  transition: all .3s ease;\n}\n.slide-fade-leave-active[data-v-3d00e12a] {\n  transition: all 0s cubic-bezier(1, 0.5, 0.8, 1);\n}\n.slide-fade-enter[data-v-3d00e12a],\n.slide-fade-leave-to[data-v-3d00e12a] {\n  transform: translateX(10px);\n  opacity: 0;\n}\n.fade-enter-active[data-v-3d00e12a],\n.fade-leave-active[data-v-3d00e12a] {\n  transition: opacity .5s;\n}\n.fade-enter[data-v-3d00e12a],\n.fade-leave-to[data-v-3d00e12a] {\n  opacity: 0;\n}\n#water[data-v-3d00e12a] {\n  position: absolute;\n  width: calc(100% + 100px);\n  height: calc(100% + 100px);\n  background-image: url(" + __webpack_require__(4) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\n.contact_top[data-v-3d00e12a] {\n  position: relative;\n  height: 490px;\n  background-image: url(" + __webpack_require__(57) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\n.contact_top > .contact_topTab[data-v-3d00e12a] {\n  position: relative;\n  width: 1200px;\n  padding-top: 32px;\n  margin: 0 auto;\n}\n.contact_top > .contact_topTab > .top[data-v-3d00e12a] {\n  background: #fffaf7;\n}\n.contact_assort[data-v-3d00e12a] {\n  position: relative;\n}\n.contact_assort > .contact_assort_area[data-v-3d00e12a] {\n  position: relative;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaTab[data-v-3d00e12a] {\n  position: relative;\n  display: flex;\n  justify-content: space-around;\n  width: 490px;\n  margin: 0 auto;\n  padding: 35px 50px;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaTab > span[data-v-3d00e12a] {\n  font-size: 12px;\n  cursor: pointer;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaTab > i[data-v-3d00e12a] {\n  line-height: 12px;\n  border: 1px solid #8EA595;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaTab .assortTabActive[data-v-3d00e12a] {\n  color: #8EA595;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail[data-v-3d00e12a] {\n  position: relative;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_feedback[data-v-3d00e12a],\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail .ca_areaDetail_contact[data-v-3d00e12a],\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail .ca_areaDetail_recruit[data-v-3d00e12a] {\n  position: relative;\n  padding-top: 85px;\n  padding-bottom: 150px;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_feedback[data-v-3d00e12a] {\n  width: 800px;\n  margin: 0 auto;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_feedback > .ca_areaDetail_feedback_contactInfo[data-v-3d00e12a] {\n  position: relative;\n  float: left;\n  width: 300px;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_feedback > .ca_areaDetail_feedback_contactInfo > p[data-v-3d00e12a] {\n  font-size: 14px;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_feedback > .ca_areaDetail_feedback_contactInfo > p > img[data-v-3d00e12a] {\n  display: block;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_feedback > .ca_areaDetail_feedback_contactInfo > p > b[data-v-3d00e12a] {\n  font-weight: normal;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_feedback > .ca_areaDetail_feedback_contactInfo > hr[data-v-3d00e12a] {\n  margin: 15px 0;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_feedback > .ca_areaDetail_feedback_input[data-v-3d00e12a] {\n  position: relative;\n  float: right;\n  width: 360px;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_feedback > .ca_areaDetail_feedback_input > p[data-v-3d00e12a] {\n  font-size: 14px;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_feedback > .ca_areaDetail_feedback_input > p > input[type=text][data-v-3d00e12a],\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_feedback > .ca_areaDetail_feedback_input > p input[type=textarea][data-v-3d00e12a] {\n  width: 100%;\n  line-height: 26px;\n  padding-left: 8px;\n  margin-bottom: 20px;\n  border: 1px solid #212121;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_feedback > .ca_areaDetail_feedback_input > p > input[type=button][data-v-3d00e12a] {\n  padding: 4px 12px;\n  background: #fff;\n  border: 1px solid #212121;\n  cursor: pointer;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_feedback > .ca_areaDetail_feedback_input > p > textarea[data-v-3d00e12a] {\n  width: 100%;\n  line-height: 26px;\n  padding-left: 8px;\n  margin-bottom: 20px;\n  border: 1px solid #212121;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_contact[data-v-3d00e12a] {\n  width: 800px;\n  margin: 0 auto;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_contact > .ca_areaDetail_contact_tab[data-v-3d00e12a] {\n  position: relative;\n  display: flex;\n  justify-content: space-around;\n  margin: 0 auto;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_contact > .ca_areaDetail_contact_tab > span[data-v-3d00e12a] {\n  display: block;\n  cursor: pointer;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_contact > .ca_areaDetail_contact_tab > span > img[data-v-3d00e12a] {\n  display: block;\n  width: 140px;\n  height: 140px;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_contact > .ca_areaDetail_contact_text[data-v-3d00e12a] {\n  position: relative;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_contact > .ca_areaDetail_contact_text > div[data-v-3d00e12a] {\n  position: relative;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_contact > .ca_areaDetail_contact_text > div > p[data-v-3d00e12a] {\n  position: relative;\n  float: left;\n  left: 50%;\n  transform: translateX(-50%);\n  -ms-transform: translateX(-50%);\n  /* IE 9 */\n  -moz-transform: translateX(-50%);\n  /* Firefox */\n  -webkit-transform: translateX(-50%);\n  /* Safari 和 Chrome */\n  -o-transform: translateX(-50%);\n  /* Opera */\n  padding: 25px 165px;\n  margin-top: 50px;\n  border-top: 1px solid #8EA595;\n  font-size: 14px;\n  color: #1F2020;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit[data-v-3d00e12a] {\n  width: 490px;\n  margin: 0 auto;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_box[data-v-3d00e12a] {\n  position: relative;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_box > .ca_areaDetail_recruit_search > input[data-v-3d00e12a] {\n  display: block;\n  float: left;\n  width: 440px;\n  line-height: 30px;\n  padding-left: 8px;\n  font-size: 14px;\n  margin-right: 15px;\n  border: 1px solid #212121;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_box > .ca_areaDetail_recruit_search > span[data-v-3d00e12a] {\n  display: block;\n  float: left;\n  width: 30px;\n  height: 30px;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_box > .ca_areaDetail_recruit_search > span > img[data-v-3d00e12a] {\n  display: block;\n  margin: 0 auto;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_box > .ca_areaDetail_recruit_list[data-v-3d00e12a] {\n  position: relative;\n  padding-top: 15px;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_box > .ca_areaDetail_recruit_list > .recruit_list_nav[data-v-3d00e12a] {\n  position: relative;\n  background: #8EA595;\n  padding: 7px 0;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_box > .ca_areaDetail_recruit_list > .recruit_list_nav > span[data-v-3d00e12a] {\n  display: block;\n  float: left;\n  line-height: 1;\n  text-align: center;\n  border-right: 1px solid #fff;\n  color: #fff;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_box > .ca_areaDetail_recruit_list > .recruit_list_nav > span[data-v-3d00e12a]:last-child {\n  border-right: none;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_box > .ca_areaDetail_recruit_list > .recruit_list_ul[data-v-3d00e12a] {\n  position: relative;\n  padding-top: 20px;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_box > .ca_areaDetail_recruit_list > .recruit_list_ul > ul[data-v-3d00e12a] {\n  list-style: none;\n  overflow: auto;\n  max-height: 500px;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_box > .ca_areaDetail_recruit_list > .recruit_list_ul > ul > li[data-v-3d00e12a] {\n  position: relative;\n  padding: 7px 0;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_box > .ca_areaDetail_recruit_list > .recruit_list_ul > ul > li > span[data-v-3d00e12a] {\n  display: block;\n  float: left;\n  line-height: 1;\n  text-align: center;\n  border-right: 1px solid #fff;\n  color: #212121;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_detail[data-v-3d00e12a] {\n  position: relative;\n  background: #fff;\n  left: 0;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_detail > .ca_areaDetail_recruit_detail_close[data-v-3d00e12a] {\n  position: absolute;\n  right: -50px;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_detail > .ca_areaDetail_recruit_detail_close > i[data-v-3d00e12a] {\n  display: block;\n  font-style: normal;\n  height: 30px;\n  line-height: 30px;\n  width: 30px;\n  border: 1px solid #aaa;\n  border-radius: 50%;\n  text-align: center;\n  color: #aaa;\n  cursor: pointer;\n  font-size: 20px;\n}\n.contact_assort > .contact_assort_area > .contact_assort_areaDetail > .ca_areaDetail_recruit > .ca_areaDetail_recruit_detail > .ca_areaDetail_recruit_detail_close > i[data-v-3d00e12a]:active {\n  color: #212121;\n  border: 1px solid #212121;\n}\n.contact_footer[data-v-3d00e12a] {\n  position: relative;\n  height: 700px;\n  background-image: url(" + __webpack_require__(8) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\n.contact_footer > .contact_footerBox[data-v-3d00e12a] {\n  position: relative;\n  margin: 0 auto;\n  padding-top: 160px;\n  width: 984px;\n}\n", ""]);
 
 // exports
 
@@ -17562,12 +17554,12 @@ exports.push([module.i, "\n*[data-v-3e9f3ea8] {\n  margin: 0;\n  padding: 0;\n  
 /* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(4)();
+exports = module.exports = __webpack_require__(3)();
 // imports
 
 
 // module
-exports.push([module.i, "\n*[data-v-592f67b8] {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n  font-family: Arial, \"Microsoft YaHei\", sans-serif;\n  color: #212121;\n  word-break: break-all;\n}\n.clearfix[data-v-592f67b8]:after {\n  content: \"\";\n  display: block;\n  zoom: 1;\n  clear: both;\n  height: 0;\n}\n.hide[data-v-592f67b8] {\n  display: none;\n  visibility: hidden;\n  width: 0;\n  height: 0;\n}\nli[data-v-592f67b8] {\n  list-style: none;\n}\n.lr-tb[data-v-592f67b8] {\n  -webkit-writing-mode: horizontal-tb;\n  writing-mode: lr-tb;\n  writing-mode: horizontal-tb;\n}\n.tb-rl[data-v-592f67b8] {\n  -webkit-writing-mode: vertical-rl;\n  writing-mode: tb-rl;\n  writing-mode: vertical-rl;\n}\n.tb-lr[data-v-592f67b8] {\n  -webkit-writing-mode: vertical-lr;\n  writing-mode: tb-rl;\n  writing-mode: vertical-lr;\n}\n.con_text *[data-v-592f67b8] {\n  font-size: 14px;\n}\n.con_text img[data-v-592f67b8] {\n  display: block;\n  max-width: 490px;\n  margin: 20px auto;\n}\n.con_text p[data-v-592f67b8] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n}\n.con_text span[data-v-592f67b8] {\n  padding-bottom: 20px;\n  font-size: 14px;\n  font-weight: normal;\n  display: block;\n}\n.con_text h5[data-v-592f67b8] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 16px;\n  padding-bottom: 30px;\n}\n.con_text b[data-v-592f67b8] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 12px;\n  font-weight: normal;\n  padding-bottom: 20px;\n}\n.con_text > .con_image[data-v-592f67b8] {\n  display: flex;\n  justify-content: space-around;\n  margin: 0 auto;\n}\n/* 可以设置不同的进入和离开动画 */\n/* 设置持续时间和动画函数 */\n.slide-fade-enter-active[data-v-592f67b8] {\n  transition: all .3s ease;\n}\n.slide-fade-leave-active[data-v-592f67b8] {\n  transition: all 0s cubic-bezier(1, 0.5, 0.8, 1);\n}\n.slide-fade-enter[data-v-592f67b8],\n.slide-fade-leave-to[data-v-592f67b8] {\n  transform: translateX(10px);\n  opacity: 0;\n}\n.fade-enter-active[data-v-592f67b8],\n.fade-leave-active[data-v-592f67b8] {\n  transition: opacity .5s;\n}\n.fade-enter[data-v-592f67b8],\n.fade-leave-to[data-v-592f67b8] {\n  opacity: 0;\n}\n#water[data-v-592f67b8] {\n  position: absolute;\n  width: calc(100% + 100px);\n  height: calc(100% + 100px);\n  background-image: url(" + __webpack_require__(30) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\nbody[data-v-592f67b8] {\n  width: 100%;\n  height: 100%;\n}\n.h_top[data-v-592f67b8] {\n  position: relative;\n  overflow: hidden;\n  width: 100%;\n  height: 850px;\n}\n.h_top > .h_topTab[data-v-592f67b8] {\n  position: relative;\n  padding-top: 32px;\n  margin: 0 auto;\n}\n.h_top > .h_topTab > .top[data-v-592f67b8] {\n  background: #fffaf7;\n}\n.h_top > .h_topLogo[data-v-592f67b8] {\n  position: relative;\n  margin-top: 170px;\n}\n.h_top > .h_topLogo > img[data-v-592f67b8] {\n  position: relative;\n  width: 796px;\n  height: 166px;\n  display: block;\n  margin: 0 auto;\n}\n.h_top > .h_topLogo > p[data-v-592f67b8] {\n  position: relative;\n  display: block;\n  text-align: center;\n  font-size: 16px;\n  font-family: HYQiHei;\n  letter-spacing: 2px;\n  color: #fff;\n  margin-top: 15px;\n}\n.h_content[data-v-592f67b8] {\n  position: relative;\n  background-image: url(" + __webpack_require__(40) + ");\n  background-size: 1200px auto;\n  background-position: top;\n  background-repeat: no-repeat;\n}\n.h_content > .hc_about[data-v-592f67b8] {\n  position: relative;\n  width: 1200px;\n  margin: 0 auto;\n}\n.h_content > .hc_about > .hc_about_title[data-v-592f67b8] {\n  position: relative;\n  padding-top: 10px;\n}\n.h_content > .hc_about > .hc_about_title > p[data-v-592f67b8] {\n  position: relative;\n  text-align: center;\n  font-size: 12px;\n}\n.h_content > .hc_about > .hc_about_content[data-v-592f67b8] {\n  position: relative;\n  padding: 80px 110px 0 110px;\n}\n.h_content > .hc_about > .hc_about_content > .hc_about_cPic[data-v-592f67b8] {\n  position: relative;\n  float: left;\n}\n.h_content > .hc_about > .hc_about_content > .hc_about_cPic > img[data-v-592f67b8] {\n  display: block;\n  width: 488px;\n  height: 188px;\n}\n.h_content > .hc_about > .hc_about_content > .hc_about_cText[data-v-592f67b8] {\n  position: relative;\n  float: right;\n  width: 440px;\n}\n.h_content > .hc_about > .hc_about_content > .hc_about_cText > p[data-v-592f67b8] {\n  font-size: 14px;\n}\n.h_content > .hc_about > .hc_about_btn[data-v-592f67b8] {\n  position: relative;\n}\n.h_content > .hc_about > .hc_about_btn > input[data-v-592f67b8] {\n  position: relative;\n  left: 50%;\n  margin-left: 50px;\n  margin-top: 70px;\n  font-size: 12px;\n  border: 1px solid #212121;\n  background: #fff;\n  padding: 7px 17px;\n  cursor: pointer;\n}\n.h_content > .hc_product[data-v-592f67b8] {\n  position: relative;\n  width: 1200px;\n  margin: 0 auto;\n}\n.h_content > .hc_product > .hc_product_title[data-v-592f67b8] {\n  position: relative;\n}\n.h_content > .hc_product > .hc_product_title > div[data-v-592f67b8] {\n  position: relative;\n  float: left;\n  margin-top: 60px;\n  left: 50%;\n  transform: translateX(-50%);\n  -ms-transform: translateX(-50%);\n  /* IE 9 */\n  -moz-transform: translateX(-50%);\n  /* Firefox */\n  -webkit-transform: translateX(-50%);\n  /* Safari 和 Chrome */\n  -o-transform: translateX(-50%);\n  /* Opera */\n}\n.h_content > .hc_product > .hc_product_title > div > img[data-v-592f67b8] {\n  float: left;\n  display: block;\n  width: 50px;\n  height: 50px;\n  padding: 8px;\n  margin: 6px 0;\n  background-repeat: no-repeat;\n  background-size: 135px 34px;\n}\n.h_content > .hc_product > .hc_product_content[data-v-592f67b8] {\n  position: relative;\n  padding-top: 70px;\n  padding-bottom: 100px;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow[data-v-592f67b8] {\n  position: relative;\n  float: left;\n  width: 33.333333%;\n  height: 520px;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > img[data-v-592f67b8] {\n  position: absolute;\n  display: block;\n  width: 100%;\n  height: 520px;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_shadow[data-v-592f67b8] {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  z-index: 2;\n  opacity: 0;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_shadow > .shadow_lineTop[data-v-592f67b8] {\n  position: relative;\n  margin: 0 auto;\n  margin-top: 50px;\n  width: 0px;\n  border: 1px solid #212121;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_shadow > .shadow_circle[data-v-592f67b8] {\n  position: relative;\n  margin: 0 auto;\n  width: 6px;\n  height: 6px;\n  border: 1px solid #212121;\n  border-radius: 50%;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_shadow > .shadow_text[data-v-592f67b8] {\n  position: relative;\n  text-align: center;\n  padding: 15px 30px;\n  font-size: 12px;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_shadow > .shadow_text > span[data-v-592f67b8] {\n  line-height: 14px;\n  font-family: AvenirLT;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_shadow > .shadow_text > b[data-v-592f67b8] {\n  line-height: 26px;\n  font-family: HYQiHei;\n  font-weight: normal;\n  letter-spacing: 2px;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_shadow > .shadow_lineBottom[data-v-592f67b8] {\n  position: relative;\n  margin: 0 auto;\n  margin-bottom: 50px;\n  width: 0px;\n  height: 100px;\n  border: 1px solid #212121;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow .hc_product_cShow_shadow[data-v-592f67b8]:hover {\n  opacity: 1;\n  background: rgba(255, 255, 255, 0.5);\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_light[data-v-592f67b8] {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  z-index: 2;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_light > .light_advert[data-v-592f67b8] {\n  position: relative;\n  margin: 0 auto;\n  padding-top: 15px;\n  font-size: 14px;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_light > .light_line[data-v-592f67b8] {\n  position: relative;\n  margin: 15px auto;\n  width: 0px;\n  border: 1px solid #212121;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_light > .light_pic[data-v-592f67b8] {\n  position: relative;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_light > .light_pic > img[data-v-592f67b8] {\n  position: relative;\n  display: block;\n  margin: 0 auto;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_light > .light_pic > p[data-v-592f67b8] {\n  text-align: center;\n  font-size: 12px;\n  font-family: AvenirLT;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_weight[data-v-592f67b8] {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  z-index: 2;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_weight > .weight_advert[data-v-592f67b8] {\n  position: relative;\n  margin: 0 auto;\n  padding-top: 15px;\n  font-size: 14px;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_weight > .weight_line[data-v-592f67b8] {\n  position: relative;\n  margin: 15px auto;\n  width: 0px;\n  border: 1px solid #212121;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_weight > .weight_pic[data-v-592f67b8] {\n  position: relative;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_weight > .weight_pic > img[data-v-592f67b8] {\n  position: relative;\n  display: block;\n  margin: 0 auto;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_weight > .weight_pic > p[data-v-592f67b8] {\n  text-align: center;\n  font-size: 12px;\n  font-family: AvenirLT;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow4[data-v-592f67b8] {\n  width: 66.666666%;\n}\n.h_content > .hc_manager[data-v-592f67b8] {\n  position: relative;\n  padding-bottom: 85px;\n}\n.h_content > .hc_manager > .hc_manager_title[data-v-592f67b8] {\n  position: relative;\n}\n.h_content > .hc_manager > .hc_manager_title > p[data-v-592f67b8] {\n  font-size: 14px;\n  text-align: center;\n}\n.h_content > .hc_manager > .hc_manager_title > i[data-v-592f67b8] {\n  position: relative;\n  margin: 0 auto;\n  margin-top: 20px;\n  display: block;\n  width: 50px;\n  border-bottom: 1px solid #91A698;\n}\n.h_content > .hc_cooperate[data-v-592f67b8] {\n  position: relative;\n  padding-bottom: 165px;\n}\n.h_content > .hc_cooperate > div[data-v-592f67b8] {\n  position: relative;\n  width: 800px;\n  margin: 0 auto;\n  display: flex;\n  justify-content: space-between;\n}\n.h_content > .hc_cooperate > div > img[data-v-592f67b8] {\n  display: block;\n  height: 30px;\n}\n.h_footer[data-v-592f67b8] {\n  position: relative;\n  height: 700px;\n  background-image: url(" + __webpack_require__(7) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\n.h_footer > .h_footerBox[data-v-592f67b8] {\n  position: relative;\n  margin: 0 auto;\n  padding-top: 160px;\n  width: 984px;\n}\n", ""]);
+exports.push([module.i, "\n*[data-v-3e9f3ea8] {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n  font-family: Arial, \"Microsoft YaHei\", sans-serif;\n  color: #212121;\n  word-break: break-all;\n}\n.clearfix[data-v-3e9f3ea8]:after {\n  content: \"\";\n  display: block;\n  zoom: 1;\n  clear: both;\n  height: 0;\n}\n.hide[data-v-3e9f3ea8] {\n  display: none;\n  visibility: hidden;\n  width: 0;\n  height: 0;\n}\nli[data-v-3e9f3ea8] {\n  list-style: none;\n}\n.lr-tb[data-v-3e9f3ea8] {\n  -webkit-writing-mode: horizontal-tb;\n  writing-mode: lr-tb;\n  writing-mode: horizontal-tb;\n}\n.tb-rl[data-v-3e9f3ea8] {\n  -webkit-writing-mode: vertical-rl;\n  writing-mode: tb-rl;\n  writing-mode: vertical-rl;\n}\n.tb-lr[data-v-3e9f3ea8] {\n  -webkit-writing-mode: vertical-lr;\n  writing-mode: tb-rl;\n  writing-mode: vertical-lr;\n}\n.con_text *[data-v-3e9f3ea8] {\n  font-size: 14px;\n}\n.con_text img[data-v-3e9f3ea8] {\n  display: block;\n  max-width: 490px;\n  margin: 20px auto;\n}\n.con_text p[data-v-3e9f3ea8] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n}\n.con_text span[data-v-3e9f3ea8] {\n  padding-bottom: 20px;\n  font-size: 14px;\n  font-weight: normal;\n  display: block;\n}\n.con_text h5[data-v-3e9f3ea8] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 16px;\n  padding-bottom: 30px;\n}\n.con_text b[data-v-3e9f3ea8] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 12px;\n  font-weight: normal;\n  padding-bottom: 20px;\n}\n.con_text > .con_image[data-v-3e9f3ea8] {\n  display: flex;\n  justify-content: space-around;\n  margin: 0 auto;\n}\n/* 可以设置不同的进入和离开动画 */\n/* 设置持续时间和动画函数 */\n.slide-fade-enter-active[data-v-3e9f3ea8] {\n  transition: all .3s ease;\n}\n.slide-fade-leave-active[data-v-3e9f3ea8] {\n  transition: all 0s cubic-bezier(1, 0.5, 0.8, 1);\n}\n.slide-fade-enter[data-v-3e9f3ea8],\n.slide-fade-leave-to[data-v-3e9f3ea8] {\n  transform: translateX(10px);\n  opacity: 0;\n}\n.fade-enter-active[data-v-3e9f3ea8],\n.fade-leave-active[data-v-3e9f3ea8] {\n  transition: opacity .5s;\n}\n.fade-enter[data-v-3e9f3ea8],\n.fade-leave-to[data-v-3e9f3ea8] {\n  opacity: 0;\n}\n#water[data-v-3e9f3ea8] {\n  position: absolute;\n  width: calc(100% + 100px);\n  height: calc(100% + 100px);\n  background-image: url(" + __webpack_require__(4) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\n.top[data-v-3e9f3ea8] {\n  position: relative;\n}\n.top_tab[data-v-3e9f3ea8] {\n  position: relative;\n  width: 1200px;\n  margin: 0 auto;\n}\n.top_tab > .top_logo[data-v-3e9f3ea8] {\n  position: relative;\n  float: left;\n  padding: 6px;\n}\n.top_tab > .top_logo > img[data-v-3e9f3ea8] {\n  display: block;\n  width: 50px;\n  height: 50px;\n}\n.top_tab > .top_order[data-v-3e9f3ea8] {\n  position: relative;\n  float: left;\n  padding-top: 4px;\n  margin-left: 20px;\n}\n.top_tab > .top_order > p.ordersEn > span[data-v-3e9f3ea8] {\n  position: relative;\n  font-size: 14px;\n  font-weight: bold;\n  color: #212121;\n  line-height: 26px;\n  margin: 0 30px;\n  cursor: pointer;\n}\n.top_tab > .top_order > p.ordersEn > span > b[data-v-3e9f3ea8] {\n  position: absolute;\n  font-size: 12px;\n  font-weight: normal;\n  width: auto;\n  bottom: -27px;\n  text-align: center;\n  left: 50%;\n  line-height: 1;\n  white-space: nowrap;\n  transform: translateX(-50%);\n  -ms-transform: translateX(-50%);\n  /* IE 9 */\n  -moz-transform: translateX(-50%);\n  /* Firefox */\n  -webkit-transform: translateX(-50%);\n  /* Safari 和 Chrome */\n  -o-transform: translateX(-50%);\n  /* Opera */\n}\n.top_tab > .top_order > p.ordersEn .tabActive[data-v-3e9f3ea8] {\n  color: #8EA595;\n}\n.top_tab > .top_order > hr[data-v-3e9f3ea8] {\n  border: none;\n  border-bottom: 1px solid #212121;\n  cursor: pointer;\n}\n.top_tab > .top_others[data-v-3e9f3ea8] {\n  position: relative;\n  float: right;\n}\n.top_tab > .top_others > img[data-v-3e9f3ea8] {\n  float: left;\n  display: block;\n  width: 50px;\n  height: 50px;\n  padding: 8px;\n  margin: 6px 0;\n  background-repeat: no-repeat;\n  background-size: 135px 34px;\n}\n", ""]);
 
 // exports
 
@@ -17576,12 +17568,12 @@ exports.push([module.i, "\n*[data-v-592f67b8] {\n  margin: 0;\n  padding: 0;\n  
 /* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(4)();
+exports = module.exports = __webpack_require__(3)();
 // imports
 
 
 // module
-exports.push([module.i, "\n*[data-v-63b2bdd0] {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n  font-family: Arial, \"Microsoft YaHei\", sans-serif;\n  color: #212121;\n  word-break: break-all;\n}\n.clearfix[data-v-63b2bdd0]:after {\n  content: \"\";\n  display: block;\n  zoom: 1;\n  clear: both;\n  height: 0;\n}\n.hide[data-v-63b2bdd0] {\n  display: none;\n  visibility: hidden;\n  width: 0;\n  height: 0;\n}\nli[data-v-63b2bdd0] {\n  list-style: none;\n}\n.lr-tb[data-v-63b2bdd0] {\n  -webkit-writing-mode: horizontal-tb;\n  writing-mode: lr-tb;\n  writing-mode: horizontal-tb;\n}\n.tb-rl[data-v-63b2bdd0] {\n  -webkit-writing-mode: vertical-rl;\n  writing-mode: tb-rl;\n  writing-mode: vertical-rl;\n}\n.tb-lr[data-v-63b2bdd0] {\n  -webkit-writing-mode: vertical-lr;\n  writing-mode: tb-rl;\n  writing-mode: vertical-lr;\n}\n.con_text *[data-v-63b2bdd0] {\n  font-size: 14px;\n}\n.con_text img[data-v-63b2bdd0] {\n  display: block;\n  max-width: 490px;\n  margin: 20px auto;\n}\n.con_text p[data-v-63b2bdd0] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n}\n.con_text span[data-v-63b2bdd0] {\n  padding-bottom: 20px;\n  font-size: 14px;\n  font-weight: normal;\n  display: block;\n}\n.con_text h5[data-v-63b2bdd0] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 16px;\n  padding-bottom: 30px;\n}\n.con_text b[data-v-63b2bdd0] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 12px;\n  font-weight: normal;\n  padding-bottom: 20px;\n}\n.con_text > .con_image[data-v-63b2bdd0] {\n  display: flex;\n  justify-content: space-around;\n  margin: 0 auto;\n}\n/* 可以设置不同的进入和离开动画 */\n/* 设置持续时间和动画函数 */\n.slide-fade-enter-active[data-v-63b2bdd0] {\n  transition: all .3s ease;\n}\n.slide-fade-leave-active[data-v-63b2bdd0] {\n  transition: all 0s cubic-bezier(1, 0.5, 0.8, 1);\n}\n.slide-fade-enter[data-v-63b2bdd0],\n.slide-fade-leave-to[data-v-63b2bdd0] {\n  transform: translateX(10px);\n  opacity: 0;\n}\n.fade-enter-active[data-v-63b2bdd0],\n.fade-leave-active[data-v-63b2bdd0] {\n  transition: opacity .5s;\n}\n.fade-enter[data-v-63b2bdd0],\n.fade-leave-to[data-v-63b2bdd0] {\n  opacity: 0;\n}\n#water[data-v-63b2bdd0] {\n  position: absolute;\n  width: calc(100% + 100px);\n  height: calc(100% + 100px);\n  background-image: url(" + __webpack_require__(30) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\n.about_top[data-v-63b2bdd0] {\n  position: relative;\n  height: 490px;\n  background-image: url(" + __webpack_require__(74) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\n.about_top > .about_topTab[data-v-63b2bdd0] {\n  position: relative;\n  padding-top: 32px;\n  margin: 0 auto;\n}\n.about_top > .about_topTab > .top[data-v-63b2bdd0] {\n  background: #fffaf7;\n}\n.about_content[data-v-63b2bdd0] {\n  position: relative;\n}\n.about_content > .about_contentTab[data-v-63b2bdd0] {\n  position: relative;\n}\n.about_content > .about_contentTab > .about_contentTab_order[data-v-63b2bdd0] {\n  position: relative;\n  display: flex;\n  justify-content: space-around;\n  width: 490px;\n  margin: 0 auto;\n  padding: 35px 50px;\n}\n.about_content > .about_contentTab > .about_contentTab_order > span[data-v-63b2bdd0] {\n  font-size: 12px;\n  cursor: pointer;\n}\n.about_content > .about_contentTab > .about_contentTab_order > i[data-v-63b2bdd0] {\n  line-height: 12px;\n  border: 1px solid #8EA595;\n}\n.about_content > .about_contentTab > .about_contentTab_order .contentTabActive[data-v-63b2bdd0] {\n  color: #8EA595;\n}\n.about_content > .about_contentTab > .about_content_assort[data-v-63b2bdd0] {\n  position: relative;\n  padding-bottom: 150px;\n}\n.about_content > .about_contentTab > .about_content_assort > .ac_assort_news[data-v-63b2bdd0] {\n  position: relative;\n}\n.about_content > .about_contentTab > .about_content_assort > .ac_assort_news > .ac_assort_newsPages[data-v-63b2bdd0] {\n  position: relative;\n  width: 1000px;\n  margin: 0 auto;\n  max-height: 510px;\n  overflow: auto;\n}\n.about_content > .about_contentTab > .about_content_assort > .ac_assort_news > .ac_assort_newsPages > .ac_assort_newsPages_box[data-v-63b2bdd0] {\n  position: relative;\n  width: 100%;\n  display: flex;\n  justify-content: space-between;\n  flex-wrap: wrap;\n}\n.about_content > .about_contentTab > .about_content_assort > .ac_assort_news > .ac_assort_newsPages > .ac_assort_newsPages_box > .aca_news[data-v-63b2bdd0] {\n  width: 280px;\n  margin-bottom: 50px;\n}\n.about_content > .about_contentTab > .about_content_assort > .ac_assort_news > .ac_assort_newsPages > .ac_assort_newsPages_box > .aca_news > b[data-v-63b2bdd0] {\n  display: block;\n  line-height: 26px;\n  font-size: 16px;\n}\n.about_content > .about_contentTab > .about_content_assort > .ac_assort_news > .ac_assort_newsPages > .ac_assort_newsPages_box > .aca_news > h5[data-v-63b2bdd0] {\n  display: block;\n  font-size: 14px;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  line-height: 40px;\n}\n.about_content > .about_contentTab > .about_content_assort > .ac_assort_news > .ac_assort_newsPages > .ac_assort_newsPages_box > .aca_news > p[data-v-63b2bdd0] {\n  font-size: 12px;\n  display: -webkit-box;\n  -webkit-box-orient: vertical;\n  -webkit-line-clamp: 3;\n  overflow: hidden;\n}\n.about_content > .about_contentTab > .about_content_assort > .ac_assort_news > .ac_assort_newsPages > .ac_assort_newsPages_box > .aca_news > i[data-v-63b2bdd0] {\n  float: right;\n  cursor: pointer;\n}\n.about_content > .about_contentTab > .about_content_assort > .ac_assort_news > .ac_assort_newsText[data-v-63b2bdd0] {\n  position: relative;\n  width: 1000px;\n  margin: 0 auto;\n}\n.about_content > .about_contentTab > .about_content_assort > .ac_assort_news > .ac_assort_newsText > .ac_assort_newsText_close[data-v-63b2bdd0] {\n  position: absolute;\n  right: 150px;\n}\n.about_content > .about_contentTab > .about_content_assort > .ac_assort_news > .ac_assort_newsText > .ac_assort_newsText_close > i[data-v-63b2bdd0] {\n  display: block;\n  font-style: normal;\n  height: 30px;\n  line-height: 30px;\n  width: 30px;\n  border: 1px solid #aaa;\n  border-radius: 50%;\n  text-align: center;\n  color: #aaa;\n  cursor: pointer;\n  font-size: 20px;\n}\n.about_content > .about_contentTab > .about_content_assort > .ac_assort_news > .ac_assort_newsText > .ac_assort_newsText_close > i[data-v-63b2bdd0]:active {\n  color: #212121;\n  border: 1px solid #212121;\n}\n.about_content > .about_contentTab > .about_content_assort > .ac_assort_manager[data-v-63b2bdd0] {\n  position: relative;\n}\n.about_footer[data-v-63b2bdd0] {\n  position: relative;\n  height: 700px;\n  background-image: url(" + __webpack_require__(7) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\n.about_footer > .about_footerBox[data-v-63b2bdd0] {\n  position: relative;\n  margin: 0 auto;\n  padding-top: 160px;\n  width: 984px;\n}\n", ""]);
+exports.push([module.i, "\n*[data-v-592f67b8] {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n  font-family: Arial, \"Microsoft YaHei\", sans-serif;\n  color: #212121;\n  word-break: break-all;\n}\n.clearfix[data-v-592f67b8]:after {\n  content: \"\";\n  display: block;\n  zoom: 1;\n  clear: both;\n  height: 0;\n}\n.hide[data-v-592f67b8] {\n  display: none;\n  visibility: hidden;\n  width: 0;\n  height: 0;\n}\nli[data-v-592f67b8] {\n  list-style: none;\n}\n.lr-tb[data-v-592f67b8] {\n  -webkit-writing-mode: horizontal-tb;\n  writing-mode: lr-tb;\n  writing-mode: horizontal-tb;\n}\n.tb-rl[data-v-592f67b8] {\n  -webkit-writing-mode: vertical-rl;\n  writing-mode: tb-rl;\n  writing-mode: vertical-rl;\n}\n.tb-lr[data-v-592f67b8] {\n  -webkit-writing-mode: vertical-lr;\n  writing-mode: tb-rl;\n  writing-mode: vertical-lr;\n}\n.con_text *[data-v-592f67b8] {\n  font-size: 14px;\n}\n.con_text img[data-v-592f67b8] {\n  display: block;\n  max-width: 490px;\n  margin: 20px auto;\n}\n.con_text p[data-v-592f67b8] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n}\n.con_text span[data-v-592f67b8] {\n  padding-bottom: 20px;\n  font-size: 14px;\n  font-weight: normal;\n  display: block;\n}\n.con_text h5[data-v-592f67b8] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 16px;\n  padding-bottom: 30px;\n}\n.con_text b[data-v-592f67b8] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 12px;\n  font-weight: normal;\n  padding-bottom: 20px;\n}\n.con_text > .con_image[data-v-592f67b8] {\n  display: flex;\n  justify-content: space-around;\n  margin: 0 auto;\n}\n/* 可以设置不同的进入和离开动画 */\n/* 设置持续时间和动画函数 */\n.slide-fade-enter-active[data-v-592f67b8] {\n  transition: all .3s ease;\n}\n.slide-fade-leave-active[data-v-592f67b8] {\n  transition: all 0s cubic-bezier(1, 0.5, 0.8, 1);\n}\n.slide-fade-enter[data-v-592f67b8],\n.slide-fade-leave-to[data-v-592f67b8] {\n  transform: translateX(10px);\n  opacity: 0;\n}\n.fade-enter-active[data-v-592f67b8],\n.fade-leave-active[data-v-592f67b8] {\n  transition: opacity .5s;\n}\n.fade-enter[data-v-592f67b8],\n.fade-leave-to[data-v-592f67b8] {\n  opacity: 0;\n}\n#water[data-v-592f67b8] {\n  position: absolute;\n  width: calc(100% + 100px);\n  height: calc(100% + 100px);\n  background-image: url(" + __webpack_require__(4) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\nbody[data-v-592f67b8] {\n  width: 100%;\n  height: 100%;\n}\n.h_top[data-v-592f67b8] {\n  position: relative;\n  overflow: hidden;\n  width: 100%;\n  height: 850px;\n}\n.h_top > .h_topTab[data-v-592f67b8] {\n  position: relative;\n  padding-top: 32px;\n  margin: 0 auto;\n}\n.h_top > .h_topTab > .top[data-v-592f67b8] {\n  background: #fffaf7;\n}\n.h_top > .h_topLogo[data-v-592f67b8] {\n  position: relative;\n  margin-top: 170px;\n}\n.h_top > .h_topLogo > img[data-v-592f67b8] {\n  position: relative;\n  width: 796px;\n  height: 166px;\n  display: block;\n  margin: 0 auto;\n}\n.h_top > .h_topLogo > p[data-v-592f67b8] {\n  position: relative;\n  display: block;\n  text-align: center;\n  font-size: 16px;\n  font-family: HYQiHei;\n  letter-spacing: 2px;\n  color: #fff;\n  margin-top: 15px;\n}\n.h_content[data-v-592f67b8] {\n  position: relative;\n  background-image: url(" + __webpack_require__(40) + ");\n  background-size: 1200px auto;\n  background-position: top;\n  background-repeat: no-repeat;\n}\n.h_content > .hc_about[data-v-592f67b8] {\n  position: relative;\n  width: 1200px;\n  margin: 0 auto;\n}\n.h_content > .hc_about > .hc_about_title[data-v-592f67b8] {\n  position: relative;\n  padding-top: 10px;\n}\n.h_content > .hc_about > .hc_about_title > p[data-v-592f67b8] {\n  position: relative;\n  text-align: center;\n  font-size: 12px;\n}\n.h_content > .hc_about > .hc_about_content[data-v-592f67b8] {\n  position: relative;\n  padding: 80px 110px 0 110px;\n}\n.h_content > .hc_about > .hc_about_content > .hc_about_cPic[data-v-592f67b8] {\n  position: relative;\n  float: left;\n}\n.h_content > .hc_about > .hc_about_content > .hc_about_cPic > img[data-v-592f67b8] {\n  display: block;\n  width: 488px;\n  height: 188px;\n}\n.h_content > .hc_about > .hc_about_content > .hc_about_cText[data-v-592f67b8] {\n  position: relative;\n  float: right;\n  width: 440px;\n}\n.h_content > .hc_about > .hc_about_content > .hc_about_cText > p[data-v-592f67b8] {\n  font-size: 14px;\n}\n.h_content > .hc_about > .hc_about_btn[data-v-592f67b8] {\n  position: relative;\n}\n.h_content > .hc_about > .hc_about_btn > input[data-v-592f67b8] {\n  position: relative;\n  left: 50%;\n  margin-left: 50px;\n  margin-top: 70px;\n  font-size: 12px;\n  border: 1px solid #212121;\n  background: #fff;\n  padding: 7px 17px;\n  cursor: pointer;\n}\n.h_content > .hc_product[data-v-592f67b8] {\n  position: relative;\n  width: 1200px;\n  margin: 0 auto;\n}\n.h_content > .hc_product > .hc_product_title[data-v-592f67b8] {\n  position: relative;\n}\n.h_content > .hc_product > .hc_product_title > div[data-v-592f67b8] {\n  position: relative;\n  float: left;\n  margin-top: 60px;\n  left: 50%;\n  transform: translateX(-50%);\n  -ms-transform: translateX(-50%);\n  /* IE 9 */\n  -moz-transform: translateX(-50%);\n  /* Firefox */\n  -webkit-transform: translateX(-50%);\n  /* Safari 和 Chrome */\n  -o-transform: translateX(-50%);\n  /* Opera */\n}\n.h_content > .hc_product > .hc_product_title > div > img[data-v-592f67b8] {\n  float: left;\n  display: block;\n  width: 50px;\n  height: 50px;\n  padding: 8px;\n  margin: 6px 0;\n  background-repeat: no-repeat;\n  background-size: 135px 34px;\n}\n.h_content > .hc_product > .hc_product_content[data-v-592f67b8] {\n  position: relative;\n  padding-top: 70px;\n  padding-bottom: 100px;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow[data-v-592f67b8] {\n  position: relative;\n  float: left;\n  width: 33.333333%;\n  height: 520px;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > img[data-v-592f67b8] {\n  position: absolute;\n  display: block;\n  width: 100%;\n  height: 520px;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_shadow[data-v-592f67b8] {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  z-index: 2;\n  opacity: 0;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_shadow > .shadow_lineTop[data-v-592f67b8] {\n  position: relative;\n  margin: 0 auto;\n  margin-top: 50px;\n  width: 0px;\n  border: 1px solid #212121;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_shadow > .shadow_circle[data-v-592f67b8] {\n  position: relative;\n  margin: 0 auto;\n  width: 6px;\n  height: 6px;\n  border: 1px solid #212121;\n  border-radius: 50%;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_shadow > .shadow_text[data-v-592f67b8] {\n  position: relative;\n  text-align: center;\n  padding: 15px 30px;\n  font-size: 12px;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_shadow > .shadow_text > span[data-v-592f67b8] {\n  line-height: 14px;\n  font-family: AvenirLT;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_shadow > .shadow_text > b[data-v-592f67b8] {\n  line-height: 26px;\n  font-family: HYQiHei;\n  font-weight: normal;\n  letter-spacing: 2px;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_shadow > .shadow_lineBottom[data-v-592f67b8] {\n  position: relative;\n  margin: 0 auto;\n  margin-bottom: 50px;\n  width: 0px;\n  height: 100px;\n  border: 1px solid #212121;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow .hc_product_cShow_shadow[data-v-592f67b8]:hover {\n  opacity: 1;\n  background: rgba(255, 255, 255, 0.5);\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_light[data-v-592f67b8] {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  z-index: 2;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_light > .light_advert[data-v-592f67b8] {\n  position: relative;\n  margin: 0 auto;\n  padding-top: 15px;\n  font-size: 14px;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_light > .light_line[data-v-592f67b8] {\n  position: relative;\n  margin: 15px auto;\n  width: 0px;\n  border: 1px solid #212121;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_light > .light_pic[data-v-592f67b8] {\n  position: relative;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_light > .light_pic > img[data-v-592f67b8] {\n  position: relative;\n  display: block;\n  margin: 0 auto;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_light > .light_pic > p[data-v-592f67b8] {\n  text-align: center;\n  font-size: 12px;\n  font-family: AvenirLT;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_weight[data-v-592f67b8] {\n  position: absolute;\n  width: 100%;\n  height: 100%;\n  z-index: 2;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_weight > .weight_advert[data-v-592f67b8] {\n  position: relative;\n  margin: 0 auto;\n  padding-top: 15px;\n  font-size: 14px;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_weight > .weight_line[data-v-592f67b8] {\n  position: relative;\n  margin: 15px auto;\n  width: 0px;\n  border: 1px solid #212121;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_weight > .weight_pic[data-v-592f67b8] {\n  position: relative;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_weight > .weight_pic > img[data-v-592f67b8] {\n  position: relative;\n  display: block;\n  margin: 0 auto;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow > .hc_product_cShow_weight > .weight_pic > p[data-v-592f67b8] {\n  text-align: center;\n  font-size: 12px;\n  font-family: AvenirLT;\n}\n.h_content > .hc_product > .hc_product_content > .hc_product_cShow4[data-v-592f67b8] {\n  width: 66.666666%;\n}\n.h_content > .hc_manager[data-v-592f67b8] {\n  position: relative;\n  padding-bottom: 85px;\n}\n.h_content > .hc_manager > .hc_manager_title[data-v-592f67b8] {\n  position: relative;\n}\n.h_content > .hc_manager > .hc_manager_title > p[data-v-592f67b8] {\n  font-size: 14px;\n  text-align: center;\n}\n.h_content > .hc_manager > .hc_manager_title > i[data-v-592f67b8] {\n  position: relative;\n  margin: 0 auto;\n  margin-top: 20px;\n  display: block;\n  width: 50px;\n  border-bottom: 1px solid #91A698;\n}\n.h_content > .hc_cooperate[data-v-592f67b8] {\n  position: relative;\n  padding-bottom: 165px;\n}\n.h_content > .hc_cooperate > div[data-v-592f67b8] {\n  position: relative;\n  width: 800px;\n  margin: 0 auto;\n  display: flex;\n  justify-content: space-between;\n}\n.h_content > .hc_cooperate > div > img[data-v-592f67b8] {\n  display: block;\n  height: 30px;\n}\n.h_footer[data-v-592f67b8] {\n  position: relative;\n  height: 700px;\n  background-image: url(" + __webpack_require__(8) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\n.h_footer > .h_footerBox[data-v-592f67b8] {\n  position: relative;\n  margin: 0 auto;\n  padding-top: 160px;\n  width: 984px;\n}\n", ""]);
 
 // exports
 
@@ -17590,18 +17582,32 @@ exports.push([module.i, "\n*[data-v-63b2bdd0] {\n  margin: 0;\n  padding: 0;\n  
 /* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(4)();
+exports = module.exports = __webpack_require__(3)();
 // imports
 
 
 // module
-exports.push([module.i, "\n*[data-v-f3b18e8c] {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n  font-family: Arial, \"Microsoft YaHei\", sans-serif;\n  color: #212121;\n  word-break: break-all;\n}\n.clearfix[data-v-f3b18e8c]:after {\n  content: \"\";\n  display: block;\n  zoom: 1;\n  clear: both;\n  height: 0;\n}\n.hide[data-v-f3b18e8c] {\n  display: none;\n  visibility: hidden;\n  width: 0;\n  height: 0;\n}\nli[data-v-f3b18e8c] {\n  list-style: none;\n}\n.lr-tb[data-v-f3b18e8c] {\n  -webkit-writing-mode: horizontal-tb;\n  writing-mode: lr-tb;\n  writing-mode: horizontal-tb;\n}\n.tb-rl[data-v-f3b18e8c] {\n  -webkit-writing-mode: vertical-rl;\n  writing-mode: tb-rl;\n  writing-mode: vertical-rl;\n}\n.tb-lr[data-v-f3b18e8c] {\n  -webkit-writing-mode: vertical-lr;\n  writing-mode: tb-rl;\n  writing-mode: vertical-lr;\n}\n.con_text *[data-v-f3b18e8c] {\n  font-size: 14px;\n}\n.con_text img[data-v-f3b18e8c] {\n  display: block;\n  max-width: 490px;\n  margin: 20px auto;\n}\n.con_text p[data-v-f3b18e8c] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n}\n.con_text span[data-v-f3b18e8c] {\n  padding-bottom: 20px;\n  font-size: 14px;\n  font-weight: normal;\n  display: block;\n}\n.con_text h5[data-v-f3b18e8c] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 16px;\n  padding-bottom: 30px;\n}\n.con_text b[data-v-f3b18e8c] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 12px;\n  font-weight: normal;\n  padding-bottom: 20px;\n}\n.con_text > .con_image[data-v-f3b18e8c] {\n  display: flex;\n  justify-content: space-around;\n  margin: 0 auto;\n}\n/* 可以设置不同的进入和离开动画 */\n/* 设置持续时间和动画函数 */\n.slide-fade-enter-active[data-v-f3b18e8c] {\n  transition: all .3s ease;\n}\n.slide-fade-leave-active[data-v-f3b18e8c] {\n  transition: all 0s cubic-bezier(1, 0.5, 0.8, 1);\n}\n.slide-fade-enter[data-v-f3b18e8c],\n.slide-fade-leave-to[data-v-f3b18e8c] {\n  transform: translateX(10px);\n  opacity: 0;\n}\n.fade-enter-active[data-v-f3b18e8c],\n.fade-leave-active[data-v-f3b18e8c] {\n  transition: opacity .5s;\n}\n.fade-enter[data-v-f3b18e8c],\n.fade-leave-to[data-v-f3b18e8c] {\n  opacity: 0;\n}\n#water[data-v-f3b18e8c] {\n  position: absolute;\n  width: calc(100% + 100px);\n  height: calc(100% + 100px);\n  background-image: url(" + __webpack_require__(30) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\n.product_top[data-v-f3b18e8c] {\n  position: relative;\n  height: 490px;\n  background-image: url(" + __webpack_require__(28) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\n.product_top > .product_topTab[data-v-f3b18e8c] {\n  position: relative;\n  padding-top: 32px;\n  margin: 0 auto;\n}\n.product_top > .product_topTab > .top[data-v-f3b18e8c] {\n  background: #fffaf7;\n}\n.product_assort[data-v-f3b18e8c] {\n  position: relative;\n}\n.product_assort > .product_assort_area[data-v-f3b18e8c] {\n  position: relative;\n}\n.product_assort > .product_assort_area > .product_assort_areaTab[data-v-f3b18e8c] {\n  position: relative;\n  display: flex;\n  justify-content: space-around;\n  width: 490px;\n  margin: 0 auto;\n  padding: 35px 50px;\n}\n.product_assort > .product_assort_area > .product_assort_areaTab > span[data-v-f3b18e8c] {\n  font-size: 12px;\n  cursor: pointer;\n}\n.product_assort > .product_assort_area > .product_assort_areaTab > i[data-v-f3b18e8c] {\n  line-height: 12px;\n  border: 1px solid #8EA595;\n}\n.product_assort > .product_assort_area > .product_assort_areaTab .assortTabActive[data-v-f3b18e8c] {\n  color: #8EA595;\n}\n.product_assort > .product_assort_area > .product_assort_areaDetail[data-v-f3b18e8c] {\n  position: relative;\n}\n.product_assort > .product_assort_area > .product_assort_areaDetail > .pa_areaDetail_mixednut[data-v-f3b18e8c],\n.product_assort > .product_assort_area > .product_assort_areaDetail .pa_areaDetail_partablebag[data-v-f3b18e8c],\n.product_assort > .product_assort_area > .product_assort_areaDetail .pa_areaDetail_boxed[data-v-f3b18e8c] {\n  position: relative;\n  padding-bottom: 150px;\n}\n.product_footer[data-v-f3b18e8c] {\n  position: relative;\n  height: 700px;\n  background-image: url(" + __webpack_require__(7) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\n.product_footer > .product_footerBox[data-v-f3b18e8c] {\n  position: relative;\n  margin: 0 auto;\n  padding-top: 160px;\n  width: 984px;\n}\n", ""]);
+exports.push([module.i, "\n*[data-v-63b2bdd0] {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n  font-family: Arial, \"Microsoft YaHei\", sans-serif;\n  color: #212121;\n  word-break: break-all;\n}\n.clearfix[data-v-63b2bdd0]:after {\n  content: \"\";\n  display: block;\n  zoom: 1;\n  clear: both;\n  height: 0;\n}\n.hide[data-v-63b2bdd0] {\n  display: none;\n  visibility: hidden;\n  width: 0;\n  height: 0;\n}\nli[data-v-63b2bdd0] {\n  list-style: none;\n}\n.lr-tb[data-v-63b2bdd0] {\n  -webkit-writing-mode: horizontal-tb;\n  writing-mode: lr-tb;\n  writing-mode: horizontal-tb;\n}\n.tb-rl[data-v-63b2bdd0] {\n  -webkit-writing-mode: vertical-rl;\n  writing-mode: tb-rl;\n  writing-mode: vertical-rl;\n}\n.tb-lr[data-v-63b2bdd0] {\n  -webkit-writing-mode: vertical-lr;\n  writing-mode: tb-rl;\n  writing-mode: vertical-lr;\n}\n.con_text *[data-v-63b2bdd0] {\n  font-size: 14px;\n}\n.con_text img[data-v-63b2bdd0] {\n  display: block;\n  max-width: 490px;\n  margin: 20px auto;\n}\n.con_text p[data-v-63b2bdd0] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n}\n.con_text span[data-v-63b2bdd0] {\n  padding-bottom: 20px;\n  font-size: 14px;\n  font-weight: normal;\n  display: block;\n}\n.con_text h5[data-v-63b2bdd0] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 16px;\n  padding-bottom: 30px;\n}\n.con_text b[data-v-63b2bdd0] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 12px;\n  font-weight: normal;\n  padding-bottom: 20px;\n}\n.con_text > .con_image[data-v-63b2bdd0] {\n  display: flex;\n  justify-content: space-around;\n  margin: 0 auto;\n}\n/* 可以设置不同的进入和离开动画 */\n/* 设置持续时间和动画函数 */\n.slide-fade-enter-active[data-v-63b2bdd0] {\n  transition: all .3s ease;\n}\n.slide-fade-leave-active[data-v-63b2bdd0] {\n  transition: all 0s cubic-bezier(1, 0.5, 0.8, 1);\n}\n.slide-fade-enter[data-v-63b2bdd0],\n.slide-fade-leave-to[data-v-63b2bdd0] {\n  transform: translateX(10px);\n  opacity: 0;\n}\n.fade-enter-active[data-v-63b2bdd0],\n.fade-leave-active[data-v-63b2bdd0] {\n  transition: opacity .5s;\n}\n.fade-enter[data-v-63b2bdd0],\n.fade-leave-to[data-v-63b2bdd0] {\n  opacity: 0;\n}\n#water[data-v-63b2bdd0] {\n  position: absolute;\n  width: calc(100% + 100px);\n  height: calc(100% + 100px);\n  background-image: url(" + __webpack_require__(4) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\n.about_top[data-v-63b2bdd0] {\n  position: relative;\n  height: 490px;\n  background-image: url(" + __webpack_require__(75) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\n.about_top > .about_topTab[data-v-63b2bdd0] {\n  position: relative;\n  padding-top: 32px;\n  margin: 0 auto;\n}\n.about_top > .about_topTab > .top[data-v-63b2bdd0] {\n  background: #fffaf7;\n}\n.about_content[data-v-63b2bdd0] {\n  position: relative;\n}\n.about_content > .about_contentTab[data-v-63b2bdd0] {\n  position: relative;\n}\n.about_content > .about_contentTab > .about_contentTab_order[data-v-63b2bdd0] {\n  position: relative;\n  display: flex;\n  justify-content: space-around;\n  width: 490px;\n  margin: 0 auto;\n  padding: 35px 50px;\n}\n.about_content > .about_contentTab > .about_contentTab_order > span[data-v-63b2bdd0] {\n  font-size: 12px;\n  cursor: pointer;\n}\n.about_content > .about_contentTab > .about_contentTab_order > i[data-v-63b2bdd0] {\n  line-height: 12px;\n  border: 1px solid #8EA595;\n}\n.about_content > .about_contentTab > .about_contentTab_order .contentTabActive[data-v-63b2bdd0] {\n  color: #8EA595;\n}\n.about_content > .about_contentTab > .about_content_assort[data-v-63b2bdd0] {\n  position: relative;\n  padding-bottom: 150px;\n}\n.about_content > .about_contentTab > .about_content_assort > .ac_assort_news[data-v-63b2bdd0] {\n  position: relative;\n}\n.about_content > .about_contentTab > .about_content_assort > .ac_assort_news > .ac_assort_newsPages[data-v-63b2bdd0] {\n  position: relative;\n  width: 1000px;\n  margin: 0 auto;\n  max-height: 510px;\n  overflow: auto;\n}\n.about_content > .about_contentTab > .about_content_assort > .ac_assort_news > .ac_assort_newsPages > .ac_assort_newsPages_box[data-v-63b2bdd0] {\n  position: relative;\n  width: 100%;\n  display: flex;\n  justify-content: space-between;\n  flex-wrap: wrap;\n}\n.about_content > .about_contentTab > .about_content_assort > .ac_assort_news > .ac_assort_newsPages > .ac_assort_newsPages_box > .aca_news[data-v-63b2bdd0] {\n  width: 280px;\n  margin-bottom: 50px;\n}\n.about_content > .about_contentTab > .about_content_assort > .ac_assort_news > .ac_assort_newsPages > .ac_assort_newsPages_box > .aca_news > b[data-v-63b2bdd0] {\n  display: block;\n  line-height: 26px;\n  font-size: 16px;\n}\n.about_content > .about_contentTab > .about_content_assort > .ac_assort_news > .ac_assort_newsPages > .ac_assort_newsPages_box > .aca_news > h5[data-v-63b2bdd0] {\n  display: block;\n  font-size: 14px;\n  overflow: hidden;\n  text-overflow: ellipsis;\n  white-space: nowrap;\n  line-height: 40px;\n}\n.about_content > .about_contentTab > .about_content_assort > .ac_assort_news > .ac_assort_newsPages > .ac_assort_newsPages_box > .aca_news > p[data-v-63b2bdd0] {\n  font-size: 12px;\n  display: -webkit-box;\n  -webkit-box-orient: vertical;\n  -webkit-line-clamp: 3;\n  overflow: hidden;\n}\n.about_content > .about_contentTab > .about_content_assort > .ac_assort_news > .ac_assort_newsPages > .ac_assort_newsPages_box > .aca_news > i[data-v-63b2bdd0] {\n  float: right;\n  cursor: pointer;\n}\n.about_content > .about_contentTab > .about_content_assort > .ac_assort_news > .ac_assort_newsText[data-v-63b2bdd0] {\n  position: relative;\n  width: 1000px;\n  margin: 0 auto;\n}\n.about_content > .about_contentTab > .about_content_assort > .ac_assort_news > .ac_assort_newsText > .ac_assort_newsText_close[data-v-63b2bdd0] {\n  position: absolute;\n  right: 150px;\n}\n.about_content > .about_contentTab > .about_content_assort > .ac_assort_news > .ac_assort_newsText > .ac_assort_newsText_close > i[data-v-63b2bdd0] {\n  display: block;\n  font-style: normal;\n  height: 30px;\n  line-height: 30px;\n  width: 30px;\n  border: 1px solid #aaa;\n  border-radius: 50%;\n  text-align: center;\n  color: #aaa;\n  cursor: pointer;\n  font-size: 20px;\n}\n.about_content > .about_contentTab > .about_content_assort > .ac_assort_news > .ac_assort_newsText > .ac_assort_newsText_close > i[data-v-63b2bdd0]:active {\n  color: #212121;\n  border: 1px solid #212121;\n}\n.about_content > .about_contentTab > .about_content_assort > .ac_assort_manager[data-v-63b2bdd0] {\n  position: relative;\n}\n.about_footer[data-v-63b2bdd0] {\n  position: relative;\n  height: 700px;\n  background-image: url(" + __webpack_require__(8) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\n.about_footer > .about_footerBox[data-v-63b2bdd0] {\n  position: relative;\n  margin: 0 auto;\n  padding-top: 160px;\n  width: 984px;\n}\n", ""]);
 
 // exports
 
 
 /***/ }),
 /* 18 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(3)();
+// imports
+
+
+// module
+exports.push([module.i, "\n*[data-v-f3b18e8c] {\n  margin: 0;\n  padding: 0;\n  box-sizing: border-box;\n  font-family: Arial, \"Microsoft YaHei\", sans-serif;\n  color: #212121;\n  word-break: break-all;\n}\n.clearfix[data-v-f3b18e8c]:after {\n  content: \"\";\n  display: block;\n  zoom: 1;\n  clear: both;\n  height: 0;\n}\n.hide[data-v-f3b18e8c] {\n  display: none;\n  visibility: hidden;\n  width: 0;\n  height: 0;\n}\nli[data-v-f3b18e8c] {\n  list-style: none;\n}\n.lr-tb[data-v-f3b18e8c] {\n  -webkit-writing-mode: horizontal-tb;\n  writing-mode: lr-tb;\n  writing-mode: horizontal-tb;\n}\n.tb-rl[data-v-f3b18e8c] {\n  -webkit-writing-mode: vertical-rl;\n  writing-mode: tb-rl;\n  writing-mode: vertical-rl;\n}\n.tb-lr[data-v-f3b18e8c] {\n  -webkit-writing-mode: vertical-lr;\n  writing-mode: tb-rl;\n  writing-mode: vertical-lr;\n}\n.con_text *[data-v-f3b18e8c] {\n  font-size: 14px;\n}\n.con_text img[data-v-f3b18e8c] {\n  display: block;\n  max-width: 490px;\n  margin: 20px auto;\n}\n.con_text p[data-v-f3b18e8c] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n}\n.con_text span[data-v-f3b18e8c] {\n  padding-bottom: 20px;\n  font-size: 14px;\n  font-weight: normal;\n  display: block;\n}\n.con_text h5[data-v-f3b18e8c] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 16px;\n  padding-bottom: 30px;\n}\n.con_text b[data-v-f3b18e8c] {\n  display: block;\n  width: 490px;\n  margin: 0 auto;\n  font-size: 12px;\n  font-weight: normal;\n  padding-bottom: 20px;\n}\n.con_text > .con_image[data-v-f3b18e8c] {\n  display: flex;\n  justify-content: space-around;\n  margin: 0 auto;\n}\n/* 可以设置不同的进入和离开动画 */\n/* 设置持续时间和动画函数 */\n.slide-fade-enter-active[data-v-f3b18e8c] {\n  transition: all .3s ease;\n}\n.slide-fade-leave-active[data-v-f3b18e8c] {\n  transition: all 0s cubic-bezier(1, 0.5, 0.8, 1);\n}\n.slide-fade-enter[data-v-f3b18e8c],\n.slide-fade-leave-to[data-v-f3b18e8c] {\n  transform: translateX(10px);\n  opacity: 0;\n}\n.fade-enter-active[data-v-f3b18e8c],\n.fade-leave-active[data-v-f3b18e8c] {\n  transition: opacity .5s;\n}\n.fade-enter[data-v-f3b18e8c],\n.fade-leave-to[data-v-f3b18e8c] {\n  opacity: 0;\n}\n#water[data-v-f3b18e8c] {\n  position: absolute;\n  width: calc(100% + 100px);\n  height: calc(100% + 100px);\n  background-image: url(" + __webpack_require__(4) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\n.product_top[data-v-f3b18e8c] {\n  position: relative;\n  height: 490px;\n  background-image: url(" + __webpack_require__(29) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\n.product_top > .product_topTab[data-v-f3b18e8c] {\n  position: relative;\n  padding-top: 32px;\n  margin: 0 auto;\n}\n.product_top > .product_topTab > .top[data-v-f3b18e8c] {\n  background: #fffaf7;\n}\n.product_assort[data-v-f3b18e8c] {\n  position: relative;\n}\n.product_assort > .product_assort_area[data-v-f3b18e8c] {\n  position: relative;\n}\n.product_assort > .product_assort_area > .product_assort_areaTab[data-v-f3b18e8c] {\n  position: relative;\n  display: flex;\n  justify-content: space-around;\n  width: 490px;\n  margin: 0 auto;\n  padding: 35px 50px;\n}\n.product_assort > .product_assort_area > .product_assort_areaTab > span[data-v-f3b18e8c] {\n  font-size: 12px;\n  cursor: pointer;\n}\n.product_assort > .product_assort_area > .product_assort_areaTab > i[data-v-f3b18e8c] {\n  line-height: 12px;\n  border: 1px solid #8EA595;\n}\n.product_assort > .product_assort_area > .product_assort_areaTab .assortTabActive[data-v-f3b18e8c] {\n  color: #8EA595;\n}\n.product_assort > .product_assort_area > .product_assort_areaDetail[data-v-f3b18e8c] {\n  position: relative;\n}\n.product_assort > .product_assort_area > .product_assort_areaDetail > .pa_areaDetail_mixednut[data-v-f3b18e8c],\n.product_assort > .product_assort_area > .product_assort_areaDetail .pa_areaDetail_partablebag[data-v-f3b18e8c],\n.product_assort > .product_assort_area > .product_assort_areaDetail .pa_areaDetail_boxed[data-v-f3b18e8c] {\n  position: relative;\n  padding-bottom: 150px;\n}\n.product_footer[data-v-f3b18e8c] {\n  position: relative;\n  height: 700px;\n  background-image: url(" + __webpack_require__(8) + ");\n  background-position: bottom;\n  background-repeat: no-repeat;\n  background-size: cover;\n}\n.product_footer > .product_footerBox[data-v-f3b18e8c] {\n  position: relative;\n  margin: 0 auto;\n  padding-top: 160px;\n  width: 984px;\n}\n", ""]);
+
+// exports
+
+
+/***/ }),
+/* 19 */
 /***/ (function(module, exports) {
 
 // shim for using process in browser
@@ -17791,49 +17797,49 @@ process.umask = function() { return 0; };
 
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports) {
 
 module.exports = "data:image/png;base64,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"
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports) {
 
 module.exports = "./../images/02mixednuts-1.png";
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports) {
 
 module.exports = "./../images/03address-1.png";
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports) {
 
 module.exports = "./../images/03figure-1.png";
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports) {
 
 module.exports = "./../images/04news-1.png";
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports) {
 
 module.exports = "./../images/06Bagged-1.png";
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports) {
 
 module.exports = "data:image/png;base64,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"
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -18777,23 +18783,23 @@ var index_esm = {
 
 /* harmony default export */ __webpack_exports__["default"] = (index_esm);
 
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(18)))
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(19)))
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __vue_exports__, __vue_options__
 var __vue_styles__ = {}
 
 /* styles */
-__webpack_require__(95)
+__webpack_require__(96)
 
 /* script */
-__vue_exports__ = __webpack_require__(71)
+__vue_exports__ = __webpack_require__(72)
 
 /* template */
-var __vue_template__ = __webpack_require__(87)
+var __vue_template__ = __webpack_require__(88)
 __vue_options__ = __vue_exports__ = __vue_exports__ || {}
 if (
   typeof __vue_exports__.default === "object" ||
@@ -18828,22 +18834,16 @@ module.exports = __vue_exports__
 
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports) {
 
 module.exports = "./../images/01Firstpicture.png";
 
 /***/ }),
-/* 29 */
-/***/ (function(module, exports) {
-
-module.exports = "./../images/01lianxiwomen.png";
-
-/***/ }),
 /* 30 */
 /***/ (function(module, exports) {
 
-module.exports = "./../images/02Firstpicture.png";
+module.exports = "./../images/01lianxiwomen.png";
 
 /***/ }),
 /* 31 */
@@ -19021,13 +19021,13 @@ var __vue_exports__, __vue_options__
 var __vue_styles__ = {}
 
 /* styles */
-__webpack_require__(96)
+__webpack_require__(97)
 
 /* script */
-__vue_exports__ = __webpack_require__(66)
+__vue_exports__ = __webpack_require__(67)
 
 /* template */
-var __vue_template__ = __webpack_require__(88)
+var __vue_template__ = __webpack_require__(89)
 __vue_options__ = __vue_exports__ = __vue_exports__ || {}
 if (
   typeof __vue_exports__.default === "object" ||
@@ -19081,7 +19081,7 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _index = __webpack_require__(27);
+var _index = __webpack_require__(28);
 
 var _index2 = _interopRequireDefault(_index);
 
@@ -19089,10 +19089,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 // 1. 定义（路由）组件。
 // 可以从其他文件 import 进来
-var Home = __webpack_require__(84);
-var About = __webpack_require__(82);
-var Product = __webpack_require__(85);
-var Contact = __webpack_require__(83);
+var Home = __webpack_require__(85);
+var About = __webpack_require__(83);
+var Product = __webpack_require__(86);
+var Contact = __webpack_require__(84);
 
 // 2. 定义路由
 // 每个路由应该映射一个组件。 其中"component" 可以是
@@ -19138,7 +19138,7 @@ var _vue = __webpack_require__(1);
 
 var _vue2 = _interopRequireDefault(_vue);
 
-var _vuex = __webpack_require__(26);
+var _vuex = __webpack_require__(27);
 
 var _vuex2 = _interopRequireDefault(_vuex);
 
@@ -19173,6 +19173,12 @@ exports.default = new _vuex2.default.Store({
 
 /***/ }),
 /* 64 */
+/***/ (function(module, exports) {
+
+module.exports = "./../images/logo.ico";
+
+/***/ }),
+/* 65 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -21801,10 +21807,10 @@ if (inBrowser && window.Vue) {
 
 /* harmony default export */ __webpack_exports__["default"] = (VueRouter);
 
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(18)))
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(19)))
 
 /***/ }),
-/* 65 */
+/* 66 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -21872,10 +21878,10 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         }
     }
 });
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(3)))
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(6)))
 
 /***/ }),
-/* 66 */
+/* 67 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -22019,15 +22025,15 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         }
     }
 });
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(3)))
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(6)))
 
 /***/ }),
-/* 67 */
+/* 68 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vuex__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_vuex__ = __webpack_require__(27);
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 //
@@ -22063,7 +22069,7 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 /* harmony default export */ __webpack_exports__["default"] = ({
     data: function data() {
         return {
-            logo: __webpack_require__(19),
+            logo: __webpack_require__(20),
             otherFigurePic: __webpack_require__(39)
             // tabType: "HOME",
         };
@@ -22082,14 +22088,14 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 });
 
 /***/ }),
-/* 68 */
+/* 69 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* WEBPACK VAR INJECTION */(function($) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__compchild_top_vue__ = __webpack_require__(9);
+/* WEBPACK VAR INJECTION */(function($) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__compchild_top_vue__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__compchild_top_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__compchild_top_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__compchild_footer_vue__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__compchild_footer_vue__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__compchild_footer_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__compchild_footer_vue__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__compchild_manager_vue__ = __webpack_require__(59);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__compchild_manager_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2__compchild_manager_vue__);
@@ -22349,17 +22355,17 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         "Manager": __WEBPACK_IMPORTED_MODULE_2__compchild_manager_vue___default.a
     }
 });
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(3)))
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(6)))
 
 /***/ }),
-/* 69 */
+/* 70 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* WEBPACK VAR INJECTION */(function($) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__compchild_top_vue__ = __webpack_require__(9);
+/* WEBPACK VAR INJECTION */(function($) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__compchild_top_vue__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__compchild_top_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__compchild_top_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__compchild_footer_vue__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__compchild_footer_vue__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__compchild_footer_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__compchild_footer_vue__);
 //
 //
@@ -22571,13 +22577,13 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             this.assortContactTab = strTab;
 
             var dataKey = $(el).find("img").attr("data-key");
-            var src = __webpack_require__(102)("./" + dataKey + "-1.png");
+            var src = __webpack_require__(103)("./" + dataKey + "-1.png");
             $(el).find("img").attr("src", src);
 
             var elSiblings = $(el).siblings();
             elSiblings.each(function (index, item) {
                 var itemDataKey = $(item).find("img").attr("data-key");
-                var preSrc = __webpack_require__(103)("./" + itemDataKey + ".png");
+                var preSrc = __webpack_require__(104)("./" + itemDataKey + ".png");
                 $(item).find("img").attr("src", preSrc);
             });
         },
@@ -22608,21 +22614,21 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         "Foot": __WEBPACK_IMPORTED_MODULE_1__compchild_footer_vue___default.a
     }
 });
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(3)))
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(6)))
 
 /***/ }),
-/* 70 */
+/* 71 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* WEBPACK VAR INJECTION */(function($) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__compchild_top_vue__ = __webpack_require__(9);
+/* WEBPACK VAR INJECTION */(function($) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__compchild_top_vue__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__compchild_top_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__compchild_top_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__compchild_footer_vue__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__compchild_footer_vue__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__compchild_footer_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__compchild_footer_vue__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__compchild_manager_vue__ = __webpack_require__(59);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__compchild_manager_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2__compchild_manager_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_vuex__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_vuex__ = __webpack_require__(27);
 //
 //
 //
@@ -22922,10 +22928,10 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         "Manager": __WEBPACK_IMPORTED_MODULE_2__compchild_manager_vue___default.a
     }
 });
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(3)))
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(6)))
 
 /***/ }),
-/* 71 */
+/* 72 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -22948,14 +22954,14 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 });
 
 /***/ }),
-/* 72 */
+/* 73 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* WEBPACK VAR INJECTION */(function($) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__compchild_top_vue__ = __webpack_require__(9);
+/* WEBPACK VAR INJECTION */(function($) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__compchild_top_vue__ = __webpack_require__(10);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__compchild_top_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__compchild_top_vue__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__compchild_footer_vue__ = __webpack_require__(8);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__compchild_footer_vue__ = __webpack_require__(9);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__compchild_footer_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1__compchild_footer_vue__);
 //
 //
@@ -23091,10 +23097,10 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         "Foot": __WEBPACK_IMPORTED_MODULE_1__compchild_footer_vue___default.a
     }
 });
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(3)))
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(6)))
 
 /***/ }),
-/* 73 */
+/* 74 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -23104,11 +23110,11 @@ var _vue = __webpack_require__(1);
 
 var _vue2 = _interopRequireDefault(_vue);
 
-var _vueRouter = __webpack_require__(64);
+var _vueRouter = __webpack_require__(65);
 
 var _vueRouter2 = _interopRequireDefault(_vueRouter);
 
-var _jquery = __webpack_require__(3);
+var _jquery = __webpack_require__(6);
 
 var _jquery2 = _interopRequireDefault(_jquery);
 
@@ -23120,7 +23126,7 @@ var _index3 = __webpack_require__(61);
 
 var _index4 = _interopRequireDefault(_index3);
 
-var _index5 = __webpack_require__(27);
+var _index5 = __webpack_require__(28);
 
 var _index6 = _interopRequireDefault(_index5);
 
@@ -23135,6 +23141,7 @@ _vue2.default.use(_vueRouter2.default);
 // import VueResource from 'vue-resource';
 
 __webpack_require__(60);
+__webpack_require__(64);
 // require('../../lib/qqmap');
 
 // console.log(routers);
@@ -23152,68 +23159,68 @@ var vm = new _vue2.default({
 });
 
 /***/ }),
-/* 74 */
+/* 75 */
 /***/ (function(module, exports) {
 
 module.exports = "./../images/01Firstpicture.jpg";
 
 /***/ }),
-/* 75 */
+/* 76 */
 /***/ (function(module, exports) {
 
 module.exports = "./../images/03address.png";
 
 /***/ }),
-/* 76 */
+/* 77 */
 /***/ (function(module, exports) {
 
 module.exports = "./../images/07nut-1.jpg";
 
 /***/ }),
-/* 77 */
+/* 78 */
 /***/ (function(module, exports) {
 
 module.exports = "./../images/08nut-2.jpg";
 
 /***/ }),
-/* 78 */
+/* 79 */
 /***/ (function(module, exports) {
 
 module.exports = "./../images/11nut-5.jpg";
 
 /***/ }),
-/* 79 */
+/* 80 */
 /***/ (function(module, exports) {
 
 module.exports = "./../images/12leader.jpg";
 
 /***/ }),
-/* 80 */
+/* 81 */
 /***/ (function(module, exports) {
 
 module.exports = "./../images/13leader.jpg";
 
 /***/ }),
-/* 81 */
+/* 82 */
 /***/ (function(module, exports) {
 
 module.exports = "./../images/14leader.jpg";
 
 /***/ }),
-/* 82 */
+/* 83 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __vue_exports__, __vue_options__
 var __vue_styles__ = {}
 
 /* styles */
-__webpack_require__(100)
+__webpack_require__(101)
 
 /* script */
-__vue_exports__ = __webpack_require__(68)
+__vue_exports__ = __webpack_require__(69)
 
 /* template */
-var __vue_template__ = __webpack_require__(92)
+var __vue_template__ = __webpack_require__(93)
 __vue_options__ = __vue_exports__ = __vue_exports__ || {}
 if (
   typeof __vue_exports__.default === "object" ||
@@ -23248,20 +23255,20 @@ module.exports = __vue_exports__
 
 
 /***/ }),
-/* 83 */
+/* 84 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __vue_exports__, __vue_options__
 var __vue_styles__ = {}
 
 /* styles */
-__webpack_require__(97)
+__webpack_require__(98)
 
 /* script */
-__vue_exports__ = __webpack_require__(69)
+__vue_exports__ = __webpack_require__(70)
 
 /* template */
-var __vue_template__ = __webpack_require__(89)
+var __vue_template__ = __webpack_require__(90)
 __vue_options__ = __vue_exports__ = __vue_exports__ || {}
 if (
   typeof __vue_exports__.default === "object" ||
@@ -23296,20 +23303,20 @@ module.exports = __vue_exports__
 
 
 /***/ }),
-/* 84 */
+/* 85 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __vue_exports__, __vue_options__
 var __vue_styles__ = {}
 
 /* styles */
-__webpack_require__(99)
+__webpack_require__(100)
 
 /* script */
-__vue_exports__ = __webpack_require__(70)
+__vue_exports__ = __webpack_require__(71)
 
 /* template */
-var __vue_template__ = __webpack_require__(91)
+var __vue_template__ = __webpack_require__(92)
 __vue_options__ = __vue_exports__ = __vue_exports__ || {}
 if (
   typeof __vue_exports__.default === "object" ||
@@ -23344,20 +23351,20 @@ module.exports = __vue_exports__
 
 
 /***/ }),
-/* 85 */
+/* 86 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var __vue_exports__, __vue_options__
 var __vue_styles__ = {}
 
 /* styles */
-__webpack_require__(101)
+__webpack_require__(102)
 
 /* script */
-__vue_exports__ = __webpack_require__(72)
+__vue_exports__ = __webpack_require__(73)
 
 /* template */
-var __vue_template__ = __webpack_require__(93)
+var __vue_template__ = __webpack_require__(94)
 __vue_options__ = __vue_exports__ = __vue_exports__ || {}
 if (
   typeof __vue_exports__.default === "object" ||
@@ -23392,7 +23399,7 @@ module.exports = __vue_exports__
 
 
 /***/ }),
-/* 86 */
+/* 87 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
@@ -23429,7 +23436,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     staticClass: "footer_logo"
   }, [_h('img', {
     attrs: {
-      "src": __webpack_require__(19),
+      "src": __webpack_require__(20),
       "alt": ""
     }
   }), " ", _h('img', {
@@ -23476,7 +23483,7 @@ if (true) {
 }
 
 /***/ }),
-/* 87 */
+/* 88 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
@@ -23492,7 +23499,7 @@ if (true) {
 }
 
 /***/ }),
-/* 88 */
+/* 89 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
@@ -23524,7 +23531,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     staticClass: "manager_info_pic"
   }, [_h('img', {
     attrs: {
-      "src": __webpack_require__(79),
+      "src": __webpack_require__(80),
       "alt": ""
     }
   }), " ", _h('p', [_h('span', ["李金玲"]), _h('br'), _h('b', ["General manager"])])]), " ", _h('div', {
@@ -23538,7 +23545,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     staticClass: "manager_info_pic"
   }, [_h('img', {
     attrs: {
-      "src": __webpack_require__(80),
+      "src": __webpack_require__(81),
       "alt": ""
     }
   }), " ", _h('p', [_h('span', ["李程思"]), _h('br'), _h('b', ["copartner"])])]), " ", _h('div', {
@@ -23552,7 +23559,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     staticClass: "manager_info_pic"
   }, [_h('img', {
     attrs: {
-      "src": __webpack_require__(81),
+      "src": __webpack_require__(82),
       "alt": ""
     }
   }), " ", _h('p', [_h('span', ["赵永兰"]), _h('br'), _h('b', ["General manager"])])]), " ", _h('div', {
@@ -23567,7 +23574,7 @@ if (true) {
 }
 
 /***/ }),
-/* 89 */
+/* 90 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
@@ -23629,7 +23636,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     staticClass: "ca_areaDetail_feedback_contactInfo"
   }, [_h('p', [_h('img', {
     attrs: {
-      "src": __webpack_require__(29),
+      "src": __webpack_require__(30),
       "width": "180",
       "height": "25",
       "alt": ""
@@ -23694,7 +23701,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
   }, [_h('img', {
     attrs: {
       "data-key": "03address",
-      "src": __webpack_require__(21),
+      "src": __webpack_require__(22),
       "alt": ""
     }
   })]), " ", _h('span', {
@@ -23916,7 +23923,7 @@ if (true) {
 }
 
 /***/ }),
-/* 90 */
+/* 91 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
@@ -23989,7 +23996,7 @@ if (true) {
 }
 
 /***/ }),
-/* 91 */
+/* 92 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
@@ -24015,7 +24022,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     staticClass: "h_topLogo"
   }, [_h('img', {
     attrs: {
-      "src": __webpack_require__(22),
+      "src": __webpack_require__(23),
       "alt": ""
     }
   }), " ", _h('p', ["一点偷闲·就在手边"])])]), " ", _h('div', {
@@ -24086,7 +24093,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     staticClass: "hc_product_cShow hc_product_cShow1"
   }, [_h('img', {
     attrs: {
-      "src": __webpack_require__(76),
+      "src": __webpack_require__(77),
       "alt": ""
     }
   }), " ", _h('div', {
@@ -24103,7 +24110,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     staticClass: "hc_product_cShow hc_product_cShow2"
   }, [_h('img', {
     attrs: {
-      "src": __webpack_require__(77),
+      "src": __webpack_require__(78),
       "alt": ""
     }
   }), " ", _h('div', {
@@ -24164,7 +24171,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     staticClass: "hc_product_cShow hc_product_cShow5"
   }, [_h('img', {
     attrs: {
-      "src": __webpack_require__(78),
+      "src": __webpack_require__(79),
       "alt": ""
     }
   }), " ", _h('div', {
@@ -24187,7 +24194,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     staticClass: "hc_cooperate clearfix"
   }, [_h('div', [_h('img', {
     attrs: {
-      "src": __webpack_require__(25),
+      "src": __webpack_require__(26),
       "alt": ""
     }
   }), " ", _h('img', {
@@ -24229,7 +24236,7 @@ if (true) {
 }
 
 /***/ }),
-/* 92 */
+/* 93 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
@@ -24358,7 +24365,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     staticClass: "ac_assort_newsText_box con_text"
   }, [_h('h5', ["迷鹿几何每日坚果惊艳亮相【东京国际食品展】"]), " ", _h('b', ["2018.3.5   来源：网易新闻"]), " ", _h('p', [_h('span', [_h('img', {
     attrs: {
-      "src": __webpack_require__(23),
+      "src": __webpack_require__(24),
       "alt": ""
     }
   })])]), " ", _h('p', ["\n                                        2018年3月5日，第43届东京国际食品饮料展（FOODEX）在日本千叶幕张国际展览中心举行，来自世界各地的食品、饮料企业共3400家参展，开幕吸引专业采购商16604人。\n                                    "]), " ", _h('p', ["\n                                        据了解，东京国际食品饮料展是亚太地区规模最大、声誉最高、品种最全、交易量最大的食品和饮料专项展览会。规模仅次于德国科隆、法国巴黎国际食品展，位列世界第三大规模。\n                                    "]), " ", _h('p', ["\n                                        东京国际食品饮料展为期4天，此次展会，迷鹿几何作为行业优秀企业代表参展，在众多品牌中，以新颖的产品理念与良好的用户口碑，受到日本客商与消费者的青睐。\n                                    "]), " ", _h('p', ["\n                                        理念新颖：迷鹿几何每日坚果系列产品由沃隆团队自主创新研发，以“甄选全球每一颗”“每日25g 营养定制”的核心产品理念，率先在国内市场倡导“沃隆每日坚果,引领健康生活”的消费理念。将“坚果”变成“每日坚果”，引领国内坚果市场进入2.0时代。\n                                    "]), " ", _h('p', ["\n                                        优质品质：迷鹿几何每日坚果中所有坚果果干的原料，均源自全球领先产区的优质原料基地。并采用轻烤烘焙工艺,坚守原味无添加,配料表为百分百坚果配比,无任何添加剂。\n                                    "]), " ", _h('p', ["\n                                        科学配比：迷鹿几何根据人体每日所需营养，将6种全球优质坚果果干科学配比制成，每日定量25g，开创了“每日坚果”品类，也开创了一个健康的新食代。\n                                    "])])])]) : _vm._e()]), " ", _h('transition', {
@@ -24383,7 +24390,7 @@ if (true) {
 }
 
 /***/ }),
-/* 93 */
+/* 94 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c=_vm._self._c||_h;
@@ -24441,7 +24448,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
       "max-width": "490px"
     },
     attrs: {
-      "src": __webpack_require__(20),
+      "src": __webpack_require__(21),
       "alt": ""
     }
   })])])]), " ", _h('p', ["\n                                迷鹿几何食品有限公司位于吉林省，是一家以以坚果、干果、茶叶、休闲零食等食品的研发、分装及销售的为主的产业链平台型企业。围绕“帮助现代女性缓解压抑”的使命，迷鹿几何未来的业务范围还将扩展至动漫、影视等领域。\n                            "]), " ", _h('p', ["\n                                在“大众创业、万众创新”的时代大潮下，迷鹿几何从五个人的创业团队，仅用五年的时间就成为一家年销售额超过50亿元的企业。截至目前，迷鹿几何拥有员工3200多人，平均年龄24.5岁。\n                            "]), " ", _h('p', ["\n                                “做强一个IP，横跨多个产业，以三驾马车为驱动”是迷鹿几何未来五年的战略规划，借此努力实现销售额达300亿+，进入中国500强的目标。从2012年至今，迷鹿几何的产品全面覆盖天猫、京东、苏宁易购等各类电商渠道，并已建成十二个仓储物流中心以及三大配送中心。\n                            "])]) : _vm._e()]), " ", _h('transition', {
@@ -24461,7 +24468,7 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
       "max-width": "320px"
     },
     attrs: {
-      "src": __webpack_require__(24),
+      "src": __webpack_require__(25),
       "alt": ""
     }
   })])]), " ", _h('p', [_h('span', [_h('img', {
@@ -24511,32 +24518,6 @@ if (true) {
   if (module.hot.data) {
      __webpack_require__(0).rerender("data-v-f3b18e8c", module.exports)
   }
-}
-
-/***/ }),
-/* 94 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(10);
-if(typeof content === 'string') content = [[module.i, content, '']];
-// add the styles to the DOM
-var update = __webpack_require__(5)(content, {});
-if(content.locals) module.exports = content.locals;
-// Hot Module Replacement
-if(true) {
-	// When the styles change, update the <style> tags
-	if(!content.locals) {
-		module.hot.accept(10, function() {
-			var newContent = __webpack_require__(10);
-			if(typeof newContent === 'string') newContent = [[module.i, newContent, '']];
-			update(newContent);
-		});
-	}
-	// When the module is disposed, remove the <style> tags
-	module.hot.dispose(function() { update(); });
 }
 
 /***/ }),
@@ -24725,16 +24706,42 @@ if(true) {
 /* 102 */
 /***/ (function(module, exports, __webpack_require__) {
 
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(18);
+if(typeof content === 'string') content = [[module.i, content, '']];
+// add the styles to the DOM
+var update = __webpack_require__(5)(content, {});
+if(content.locals) module.exports = content.locals;
+// Hot Module Replacement
+if(true) {
+	// When the styles change, update the <style> tags
+	if(!content.locals) {
+		module.hot.accept(18, function() {
+			var newContent = __webpack_require__(18);
+			if(typeof newContent === 'string') newContent = [[module.i, newContent, '']];
+			update(newContent);
+		});
+	}
+	// When the module is disposed, remove the <style> tags
+	module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 103 */
+/***/ (function(module, exports, __webpack_require__) {
+
 var map = {
-	"./02mixednuts-1.png": 20,
+	"./02mixednuts-1.png": 21,
 	"./02phone-1.png": 33,
-	"./03address-1.png": 21,
-	"./03figure-1.png": 22,
+	"./03address-1.png": 22,
+	"./03figure-1.png": 23,
 	"./04email-1.png": 37,
-	"./04news-1.png": 23,
+	"./04news-1.png": 24,
 	"./05web-1.png": 41,
-	"./06Bagged-1.png": 24,
-	"./13Cooperativepartner-1.png": 25
+	"./06Bagged-1.png": 25,
+	"./13Cooperativepartner-1.png": 26
 };
 function webpackContext(req) {
 	return __webpack_require__(webpackContextResolve(req));
@@ -24750,48 +24757,48 @@ webpackContext.keys = function webpackContextKeys() {
 };
 webpackContext.resolve = webpackContextResolve;
 module.exports = webpackContext;
-webpackContext.id = 102;
+webpackContext.id = 103;
 
 /***/ }),
-/* 103 */
+/* 104 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var map = {
-	"./01Firstpicture.png": 28,
-	"./01lianxiwomen.png": 29,
-	"./01logo.png": 19,
-	"./02Firstpicture.png": 30,
+	"./01Firstpicture.png": 29,
+	"./01lianxiwomen.png": 30,
+	"./01logo.png": 20,
+	"./02Firstpicture.png": 4,
 	"./02erweima.png": 31,
 	"./02introduction.png": 32,
-	"./02mixednuts-1.png": 20,
+	"./02mixednuts-1.png": 21,
 	"./02phone-1.png": 33,
 	"./02phone.png": 34,
-	"./03address-1.png": 21,
-	"./03address.png": 75,
+	"./03address-1.png": 22,
+	"./03address.png": 76,
 	"./03culture.png": 35,
-	"./03figure-1.png": 22,
+	"./03figure-1.png": 23,
 	"./03figure-2.png": 36,
 	"./04email-1.png": 37,
 	"./04email.png": 38,
 	"./04figure-2.png": 39,
-	"./04news-1.png": 23,
+	"./04news-1.png": 24,
 	"./05figure-3.png": 40,
 	"./05web-1.png": 41,
 	"./05web.png": 42,
-	"./06Bagged-1.png": 24,
+	"./06Bagged-1.png": 25,
 	"./06Bagged-2.png": 43,
 	"./06Bagged-3.png": 44,
 	"./06deer.png": 45,
 	"./08box.png": 46,
 	"./09nut-3.png": 47,
 	"./10nut-4.png": 48,
-	"./13Cooperativepartner-1.png": 25,
+	"./13Cooperativepartner-1.png": 26,
 	"./14Cooperativepartner-2.png": 49,
 	"./15Cooperativepartner-3.png": 50,
 	"./16Cooperativepartner-4.png": 51,
 	"./18Cooperativepartner-6.png": 52,
 	"./19Cooperativepartner-7.png": 53,
-	"./20Bottompicture.png": 7,
+	"./20Bottompicture.png": 8,
 	"./22wechart.png": 54,
 	"./23qq.png": 55,
 	"./24wb.png": 56,
@@ -24813,7 +24820,7 @@ webpackContext.keys = function webpackContextKeys() {
 };
 webpackContext.resolve = webpackContextResolve;
 module.exports = webpackContext;
-webpackContext.id = 103;
+webpackContext.id = 104;
 
 /***/ })
 /******/ ]);

@@ -98,6 +98,18 @@ var config = {
 					}
 				}
 			},
+			{
+				test: /\.(ico)$/,
+				exclude: /node_modules/,
+				use: {
+					loader: 'file-loader',
+					options: {
+						name: 'images/[name].[ext]',
+						publicPath: './../',
+						limit: 8192,
+					}
+				}
+			},
 			// {
 			// 	test: /\.gif$/,
 			// 	use: {
