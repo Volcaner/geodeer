@@ -1,6 +1,6 @@
 # geodeer
 
-npm install
+npm install<br />
 npm run build
 
 ### 1. 简单 vue 单页应用
